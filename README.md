@@ -8,7 +8,9 @@
 
 终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。[English Here](/README_EN.md)
 
-💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐
+正在努力开发中的客户端界面UI:💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
+
+如何安装，如何使用，具体的文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。
 
 ## 项目说明
 
