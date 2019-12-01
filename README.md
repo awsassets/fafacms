@@ -1,4 +1,4 @@
-# 花花CMS(FaFa CMS): 支持分布式部署的社交内容管理系统
+# 花花CMS(FaFa CMS): 用 Golang 开发的分布式社交内容管理系统
 
 [![GitHub forks](https://img.shields.io/github/forks/hunterhug/fafacms.svg?style=social&label=Forks)](https://github.com/hunterhug/fafacms/network)
 [![GitHub stars](https://img.shields.io/github/stars/hunterhug/fafacms.svg?style=social&label=Stars)](https://github.com/hunterhug/fafacms/stargazers)
@@ -8,7 +8,7 @@
 
 终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。[English Here](/README_EN.md)
 
-正在努力开发中的客户端界面UI:💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
+正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 如何安装，如何使用，具体的文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。
 
