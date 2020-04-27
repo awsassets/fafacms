@@ -8,8 +8,6 @@
 
 终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。[English Here](/README_EN.md)
 
-正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
-
 如何安装，如何使用，具体的文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。
 
 ## 项目说明
@@ -32,9 +30,6 @@
 11. 用户和内容关键字搜索。（附加）
 
 ![](/doc/web1.png)
-
-需求时刻迭代，最新更新参见[产品更新记录](/log.md)，待处理事宜参见[清单](/todo.md)。详细设计，约束请参考实际[API文档](https://github.com/hunterhug/fafadoc)。
-。
 
 ## 写给前端人员
 
@@ -64,6 +59,11 @@ sudo ./install.sh
 
 ![](/doc/support/alipay.png)
 
+
 ## CopyRight
+
+需求时刻迭代，最新更新参见[产品更新记录](/log.md)，待处理事宜参见[清单](/todo.md)。
+
+正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 All right reserved. Attribution-NonCommercial-NoDerivatives 4.0 International.You can use it for education only but can't make profits for any companies and individuals!
