@@ -8,8 +8,6 @@
 
 终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。[English Here](/README_EN.md)
 
-如何安装，如何使用，具体的文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。
-
 ## 项目说明
 
 此项目代号为 `fafacms`。花花拼音 `fafa`，名称来源于广东话发发，花花的谐音，听起来有诙谐，娱乐等感觉，是一个使用 `Golang` 开发的前后端分离 --> 内容管理系统(CMS)。
@@ -36,6 +34,13 @@
 不关心部署，只想参与前端UI开发的看这里，请拥有一台类Unix机器，安装 `Docker`，`Docker-compose` 后一键部署。
 
 ```
+git clone github.com/hunterhug/fafacms
+cd fafacms
+
+# 先打包镜像
+sudo chmod 777 ./docker_build.sh
+sudo ./docker_build.sh
+
 # Linux使用install.sh
 # Mac请使用install_mac.sh
 cd install
@@ -43,13 +48,23 @@ chmod 777 install.sh
 sudo ./install.sh
 ```
 
-打开浏览器: `IP:8080` 进行开发，超级管理员账户密码：`admin/admin`
+主要集成了`mysql:5.7.27`，`phpmyadmin:edge-4.9`和`redis:5.0.5`，端口分别为`3306`，`8000`，`6379`，
+
+`MYSQL`账号密码：`root/123456789`,`Redis`密码：`123456789`，打开`IP:8000`登录数据库进行查看。
+
+持久卷将会挂载在 `/data/mydocker` 中。具体配置和挂载卷可修改`docker-compose.yaml`和`config.json`文件。
+
+运行后打开浏览器: [127.0.0.1:8080](127.0.0.1:8080) 进行开发，超级管理员账户密码：`admin/admin`。 
+
+具体的API文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。 可以使用 [https://insomnia.rest](https://insomnia.rest) 进行接口调试，本项目文件夹 `json` 下存放着最新的调试文件。
 
 ## 写给后端人员
 
 关心部署细节，见 [给后端开发详细的部署说明](/install/README.md)，强烈建议阅读。
 
-## 支持
+## CopyRight
+
+正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 微信支持:
 
@@ -59,11 +74,5 @@ sudo ./install.sh
 
 ![](/doc/support/alipay.png)
 
-
-## CopyRight
-
-需求时刻迭代，最新更新参见[产品更新记录](/log.md)，待处理事宜参见[清单](/todo.md)。
-
-正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 All right reserved. Attribution-NonCommercial-NoDerivatives 4.0 International.You can use it for education only but can't make profits for any companies and individuals!
