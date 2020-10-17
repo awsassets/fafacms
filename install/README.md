@@ -1,10 +1,16 @@
 # 给后端开发详细的部署说明
 
-最快速部署请安装`docker`,`docker-compose`, 然后直接一键脚本：
+环境要求：类Unix系统，Linux/Mac。
+
+最快速部署请安装 `docker`,`docker-compose`, 然后可以执行一键脚本：
 
 ```
 git clone github.com/hunterhug/fafacms
 cd fafacms
+
+# 先打包镜像
+sudo chmod 777 ./docker_build.sh
+sudo ./docker_build.sh
 
 # Linux使用install.sh
 # Mac请使用install_mac.sh
@@ -28,6 +34,8 @@ sudo ./install.sh
 # 详细说明
 
 ## 后端部署(常规)
+
+你也可以裸机部署。
 
 获取代码:
 
@@ -132,7 +140,7 @@ fafacms -config=./config.json
 
 ## 后端部署(Docker)
 
-你也可以使用`docker`进行部署, 构建镜像(Docker版本必须大于17.06):
+你也可以单独使用`docker`进行部署, 构建镜像(Docker版本必须大于17.06):
 
 ```
 sudo chmod 777 ./docker_build.sh
