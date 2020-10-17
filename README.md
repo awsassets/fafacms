@@ -50,21 +50,17 @@ sudo ./install.sh
 
 主要集成了`mysql:5.7.27`，`phpmyadmin:edge-4.9`和`redis:5.0.5`，端口分别为`3306`，`8000`，`6379`，
 
-`MYSQL`账号密码：`root/123456789`,`Redis`密码：`123456789`，打开`IP:8000`登录数据库进行查看。
+`MYSQL`账号密码：`root/123456789`，打开 [http://127.0.0.1:8000](http://127.0.0.1:8000) 可登录数据库进行数据查看，`Redis`密码：`123456789`。
 
 持久卷将会挂载在 `/data/mydocker` 中。具体配置和挂载卷可修改`docker-compose.yaml`和`config.json`文件。
 
-运行后打开浏览器: [127.0.0.1:8080](127.0.0.1:8080) 进行开发，超级管理员账户密码：`admin/admin`。 
+运行后打开浏览器: [http://127.0.0.1:8080](http://127.0.0.1:8080) 进行开发，超级管理员账户密码：`admin/admin`。 
 
 具体的API文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。 可以使用 [https://insomnia.rest](https://insomnia.rest) 进行接口调试，本项目文件夹 `json` 下存放着最新的调试文件。
 
 ## 写给后端人员
 
 关心部署细节，见 [给后端开发详细的部署说明](/install/README.md)，强烈建议阅读。
-
-## CopyRight
-
-正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 微信支持:
 
@@ -74,5 +70,8 @@ sudo ./install.sh
 
 ![](/doc/support/alipay.png)
 
+## CopyRight
+
+正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
 
 All right reserved. Attribution-NonCommercial-NoDerivatives 4.0 International.You can use it for education only but can't make profits for any companies and individuals!
