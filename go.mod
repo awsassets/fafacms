@@ -1,6 +1,6 @@
 module github.com/hunterhug/fafacms
 
-go 1.13
+go 1.15
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v1.9.6
