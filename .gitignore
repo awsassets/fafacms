@@ -1,4 +1,6 @@
-.idea/
-data
+/.idea
+/data
 .vscode
 *.exe
+/docs
+.DS_Store
