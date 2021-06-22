@@ -10,12 +10,13 @@ var Debug = false
 type Sender struct {
 	//Bcc      string
 	//BccName  string
-	Host     string `json:"Host"`
-	Port     int    `json:"Port"`
-	Email    string `json:"Email"`
-	Password string `json:"Password"`
-	Subject  string `json:"Subject"`
-	Body     string `json:"Body"`
+	Host     string `yaml:"Host"`
+	Port     int    `yaml:"Port"`
+	Account  string `yaml:"Account"`
+	Password string `yaml:"Password"`
+	Subject  string `yaml:"Subject"`
+	From     string `yaml:"From"`
+	Body     string `yaml:"Body"`
 }
 
 type Message struct {
@@ -29,7 +30,7 @@ func (mm *Message) Sent() error {
 		return nil
 	}
 	m := gomail.NewMessage()
-	m.SetAddressHeader("From", mm.Email, "FaFaCMS")
+	m.SetAddressHeader("From", mm.Account, mm.From)
 	m.SetAddressHeader("To", mm.To, mm.ToName)
 	m.SetHeader("Subject", mm.Subject)
 
@@ -38,7 +39,7 @@ func (mm *Message) Sent() error {
 
 	m.SetBody("text/html", mm.Body)
 
-	d := gomail.NewDialer(mm.Host, mm.Port, mm.Email, mm.Password)
+	d := gomail.NewDialer(mm.Host, mm.Port, mm.Account, mm.Password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	if err := d.DialAndSend(m); err != nil {
 		return err

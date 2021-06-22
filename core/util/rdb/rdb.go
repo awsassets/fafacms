@@ -19,13 +19,13 @@ const (
 )
 
 type MyDbConfig struct {
-	DriverName string
-	DbConfig
-	MaxIdleConns    int
-	MaxOpenConns    int
-	DebugToFile     bool
-	DebugToFileName string
-	Debug           bool
+	DriverName string `yaml:"DriverName"`
+	DbConfig `yaml:",inline"`
+	MaxIdleConns    int    `yaml:"MaxIdleConns"`
+	MaxOpenConns    int    `yaml:"MaxOpenConns"`
+	DebugToFile     bool   `yaml:"DebugToFile"`
+	DebugToFileName string `yaml:"DebugToFileName"`
+	Debug           bool   `yaml:"Debug"`
 }
 
 type MyDb struct {
@@ -34,13 +34,13 @@ type MyDb struct {
 }
 
 type DbConfig struct {
-	Name    string
-	Host    string
-	User    string
-	Pass    string
-	Port    string
-	Prefix  string
-	Sslmode string // sslmode=verify-full require
+	Name    string `yaml:"Name"`
+	Host    string `yaml:"Host"`
+	User    string `yaml:"User"`
+	Pass    string `yaml:"Pass"`
+	Port    string `yaml:"Port"`
+	Prefix  string `yaml:"Prefix"`
+	Sslmode string `yaml:"Sslmode"` // sslmode=verify-full require
 }
 
 func NewMysqlUrl(c DbConfig) string {
@@ -58,7 +58,6 @@ func NewMysqlUrl2(c DbConfig) string {
 	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/", c.User, c.Pass, c.Host, c.Port)
 	return dns
 }
-
 
 func NewPqUrl(c DbConfig) string {
 	if c.Port == "" {
@@ -127,16 +126,6 @@ func NewDb(config MyDbConfig) (*MyDb, error) {
 		return db, nil
 	} else {
 		return db, errors.New("Not support this drive:" + config.DriverName)
-	}
-}
-
-func (db *MyDb) Ping() error {
-	if db.Client == nil {
-		newdb, err := NewDb(db.Config)
-		db = newdb
-		return err
-	} else {
-		return db.Client.Ping()
 	}
 }
 

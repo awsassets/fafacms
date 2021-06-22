@@ -14,21 +14,21 @@ var (
 )
 
 type Config struct {
-	DefaultConfig MyConfig                   // default config
-	OssConfig     oss.Key                    // oss like aws s3
-	DbConfig      rdb.MyDbConfig             // mysql config
-	SessionConfig kv.MyRedisConf             // redis config for user session
-	MailConfig    mail.Sender `json:"Email"` // email config
+	DefaultConfig MyConfig       `yaml:"DefaultConfig"` // default config
+	OssConfig     oss.Key        `yaml:"OssConfig"`     // oss like aws s3
+	DbConfig      rdb.MyDbConfig `yaml:"DbConfig"`      // mysql config
+	SessionConfig kv.MyRedisConf `yaml:"SessionConfig"` // redis config for user session
+	MailConfig    mail.Sender    `yaml:"MailConfig"`    // email config
 }
 
 // Some especial my config
 type MyConfig struct {
-	WebPort       string
-	LogPath       string
-	StoragePath   string
-	LogDebug      bool
-	StorageOss    bool
-	CloseRegister bool
+	WebPort       string `yaml:"WebPort"`
+	LogPath       string `yaml:"LogPath"`
+	StoragePath   string `yaml:"StoragePath"`
+	LogDebug      bool   `yaml:"LogDebug"`
+	StorageOss    bool   `yaml:"StorageOss"`
+	CloseRegister bool   `yaml:"CloseRegister"`
 }
 
 // Let the config struct to json file, just for test

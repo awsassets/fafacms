@@ -67,8 +67,8 @@ var (
 // Parse flag when init
 // Those variables will not config in file
 func init() {
-	// Default read ./config.json
-	flag.StringVar(&configFile, "config", "./config.json", "Config file")
+	// Default read ./config.yaml
+	flag.StringVar(&configFile, "config", "./config.yaml", "Config file")
 
 	// Auto init db, the second time can set false
 	flag.BoolVar(&createTable, "init_db", true, "Init create db table")
@@ -147,7 +147,7 @@ func main() {
 	var err error
 
 	// Init global config
-	err = server.InitConfig(configFile)
+	err = server.InitYamlConfig(configFile)
 	if err != nil {
 		panic(err)
 	}
@@ -229,7 +229,7 @@ func main() {
 }
 
 func welcome() {
-	flog.Log.Notice("Hi! FaFa CMS! A Nice CMS.")
+	flog.Log.Noticef("Hi! %s! A Nice CMS.", config.Title)
 	s := `
 ███████╗ █████╗ ███████╗ █████╗  ██████╗███╗   ███╗███████╗
 ██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝████╗ ████║██╔════╝
@@ -237,5 +237,6 @@ func welcome() {
 ██╔══╝  ██╔══██║██╔══╝  ██╔══██║██║     ██║╚██╔╝██║╚════██║
 ██║     ██║  ██║██║     ██║  ██║╚██████╗██║ ╚═╝ ██║███████║
 ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝     ╚═╝╚══════╝`
-	flog.Log.Noticef("\n%s-v%s_%s\n", s, config.Version, util.BuildTime())
+	//flog.Log.Noticef("\n%s-v%s\n", s, config.Version, util.BuildTime())
+	flog.Log.Noticef("\n%s-%s\n", s, config.Version)
 }

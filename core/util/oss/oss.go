@@ -6,10 +6,10 @@ import (
 )
 
 type Key struct {
-	Endpoint        string `json:"Endpoint"`
-	AccessKeyId     string `json:"AccessKeyId"`
-	AccessKeySecret string `json:"AccessKeySecret"`
-	BucketName      string `json:"BucketName"`
+	Endpoint        string `yaml:"Endpoint"`
+	AccessKeyId     string `yaml:"AccessKeyId"`
+	AccessKeySecret string `yaml:"AccessKeySecret"`
+	BucketName      string `yaml:"BucketName"`
 }
 
 func SaveFile(K Key, ObjectName string, raw []byte) error {

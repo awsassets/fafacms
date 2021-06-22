@@ -17,7 +17,7 @@ sudo ./docker_build.sh
 cd install
 
 # 修改邮箱地址等
-vim config.json
+vim config.yaml
 
 chmod 777 install.sh
 sudo ./install.sh
@@ -25,11 +25,11 @@ sudo ./install.sh
 
 主要集成了`mysql:5.7.27`，`phpmyadmin:edge-4.9`和`redis:5.0.5`，端口分别为`3306`，`8000`，`6379`，
 
-`MYSQL`账号密码：`root/123456789`,`Redis`密码：`123456789`，打开`IP:8000`登录数据库进行查看。
+`MYSQL` 账号密码：`root/123456789`,`Redis` 密码：`123456789`，打开 `IP:8000` 登录数据库进行查看。
 
-持久卷将会挂载在 `/data/mydocker` 中。具体配置和挂载卷可修改`docker-compose.yaml`和`config.json`文件。
+持久卷将会挂载在 `/opt/mydocker` 中。 具体配置和挂载卷可修改 `docker-compose.yaml` 和 `config.yaml` 文件。
 
-运行后，请打开`IP:8080`进行API对接，超级管理员账户密码：`admin/admin`
+运行后，请打开 `IP:8080` 进行API对接，超级管理员账户密码：`admin/admin` 。
 
 # 详细说明
 
@@ -43,62 +43,95 @@ sudo ./install.sh
 go get -v github.com/hunterhug/fafacms
 ```
 
-代码就会保存在`Golang GOPATH`目录下.
+代码就会保存在 `Golang GOPATH` 目录下.
 
 运行:
 
 ```
-fafacms -config=./config.json
+fafacms -config=./config.yaml
 ```
 
-其中`config.json`说明如下（具体参考实际配置）:
+其中`config.yaml`说明如下（具体参考实际配置）:
 
 ```
-{
-  "DefaultConfig": {
-    "WebPort": ":8080",                 # 程序运行端口(可改)
-    "StorageOss": false,                # 文件是否保存在对象存储，默认否，true时 OssConfig 有效
-    "StoragePath": "./data/storage",    # 文件保存在本地地址(可改)
-    "LogPath": "./data/log/fafacms_log.log",        # 日志保存地址(可改)
-    "LogDebug": true,   					        # 打开调试(建议保持为true)
-    "CloseRegister": false                          # 是否关闭注册功能
-  },
-  "OssConfig": {
-    "Endpoint": "oss-cn-qingdao.aliyuncs.com",      # 对象存储配置（区域，桶和密钥对）
-    "BucketName": "syoss",
-    "AccessKeyId": "",
-    "AccessKeySecret": ""
-  },
-  "DbConfig": {
-    "DriverName": "mysql",      # 关系型数据库驱动(不能改，等功能拓展可支持不同驱动)
-    "Name": "fafa",             # 关系型数据库名字(可改)
-    "Host": "127.0.0.1",        # 关系型数据库地址(可改)
-    "User": "root",             # 关系型数据库用户(可改)
-    "Pass": "123456789",        # 关系型数据库密码(可改)
-    "Port": "3306",             # 关系型数据库端口(可改)
-    "MaxIdleConns": 20,         # 关系型数据库池闲置连接数(默认保持)
-    "MaxOpenConns": 20,         # 关系型数据库池打开连接数(默认保持)
-    "DebugToFile": true,        # SQL调试是否输出到文件(默认保持)
-    "DebugToFileName": "./data/log/fafacms_db.log",     # SQL调试输出文件路径(默认保持)
-    "Debug": true                                       # SQL调试(默认保持)
-  },
-  "Email": {
-    "Host": "smtp-mail.outlook.com",    # 忘记密码，激活用户时发邮件服务器
-    "Port": 587,                        # 邮件服务器端口
-    "Email": "gdccmcm14@live.com",      # 邮箱账号
-    "Password": "",                     # 邮箱密码
-    "Subject": "FaFa CMS Code",         # 邮箱发送主题
-    "Body": "%s Code is <br/> <p style='text-align:center'>%s</p> <br/>Valid in 5 minute."  # 邮箱内容，两个占位符，第二个%s为验证码，第一个是字符串功能。
-  },
-  "SessionConfig": {
-    "RedisHost": "127.0.0.1:6379",  # Redis地址(可改)
-    "RedisMaxIdle": 64,             # (默认保持)
-    "RedisMaxActive": 0,            # (默认保持)
-    "RedisIdleTimeout": 120,        # (默认保持)
-    "RedisDB": 0,                   # Redis默认连接数据库(默认保持)
-    "RedisPass": "123456789"        # Redis密码(可为空,可改)
-  }
-}
+# 全局配置
+DefaultConfig:
+  # 服务监听端口
+  WebPort: :8080
+  # 是否使用对象存储，否时存储在本地
+  StorageOss: false
+  # 本地文件存储位置
+  StoragePath: ./data/storage
+  # 关闭注册功能
+  CloseRegister: false
+  # 打开调试日志
+  LogDebug: true
+  # 日志地址
+  LogPath: ./data/log/fafacms_log.log
+
+# 对象存储配置
+OssConfig:
+  # 区域
+  Endpoint: oss-cn-shenzhen.aliyuncs.com
+  # 桶名
+  BucketName: syoss
+  # 密钥对
+  AccessKeyId: 1111
+  AccessKeySecret: 11111
+
+# 数据库配置
+DbConfig:
+  # 数据库名
+  Name: fafa
+  # 数据库地址，*必填
+  Host: 127.0.0.1
+  # 数据库用户名，*必填
+  User: root
+  # 数据库密码，*必填
+  Pass: 123456789
+  # 数据库端口，默认值：3306
+  Port: 3306
+  # 数据库最大空闲连接数
+  MaxIdleConns: 10
+  # 数据库最大打开连接数
+  MaxOpenConns: 20
+  # 数据库日志调试
+  Debug: true
+  # 数据库调试日志是否打印到文件中
+  # 当 debug = true 时有效，false 时打印到终端
+  DebugToFile: true
+  # 数据库调试日志打印到的文件路径
+  # 当 DebugToFile = true 时有效
+  DebugToFileName: ./data/log/fafacms_db.log
+
+# 邮件配置
+MailConfig:
+  # 忘记密码，激活用户时发邮件服务器
+  Host: smtp-mail.outlook.com
+  # 邮件服务器端口
+  Port: 587
+  # 账户密码
+  Account: gdccmcm14@live.com
+  # 账户密码
+  Password: dqwngvtplopdrjjda
+  # 邮件验证码内容
+  From: FaFaCMS
+  # 邮箱发送主题
+  Subject: "FaFa CMS Code"
+  # 邮箱内容，两个占位符，第二个%s为验证码，第一个是字符串功能。
+  Body: "%s Code is <br/> <p style='text-align:center'>%s</p> <br/>Valid in 5 minute."
+
+# Session设置
+SessionConfig:
+  # Redis地址(可改)
+  RedisHost: 127.0.0.1:6379
+  RedisMaxIdle: 64
+  RedisMaxActive: 0
+  RedisIdleTimeout: 120
+  # Redis默认连接数据库(默认保持)
+  RedisDB: 0
+  # Redis密码(可为空,可改)
+  RedisPass": 123456789
 ```
 
 具体命令参数如下：
@@ -133,7 +166,7 @@ fafacms -config=./config.json
 正常启动如下：
 
 ```
-./fafacms config=/root/fafacms/config.json -history_record=true -init_db=false
+./fafacms config=/root/fafacms/config.yaml -history_record=true -init_db=false
 ```
 
 表示文章内容开启历史记录功能，开启自动违禁评论和内容，并且关闭数据库数据填充（第二次启动时可设置为false）。
@@ -151,21 +184,21 @@ sudo ./docker_build.sh
 
 ```
 mkdir /root/fafacms
-cp docker_config.json /root/fafacms/config.json
+cp docker_config.yaml /root/fafacms/config.yaml
 ```
 
 启动容器:
 
 ```
-sudo docker run -d --name fafacms -p 8080:8080 -v /root/fafacms:/root/fafacms --env RUN_OPTS="-config=/root/fafacms/config.json -history_record=true -init_db=true" hunterhug/fafacms
+sudo docker run -d --name fafacms -p 8080:8080 -v /root/fafacms:/root/fafacms --env RUN_OPTS="-config=/root/fafacms/config.yaml -history_record=true -init_db=true" hunterhug/fafacms
 
 sudo docker logs -f --tail 10 fafacms
 ```
 
-其中`/root/fafacms`是挂载的持久化卷, 配置`config.json`放置在该文件夹下.
+其中`/root/fafacms`是挂载的持久化卷, 配置`config.yaml`放置在该文件夹下.
 
 开发中`Debug`:
 
 ```
-sudo docker run -d --name fafacms -p 8080:8080 -v /root/fafacms:/root/fafacms --env RUN_OPTS="-config=/root/fafacms/config.json -email_debug=true -auth_skip_debug=true -history_record=true -init_db=true" hunterhug/fafacms
+sudo docker run -d --name fafacms -p 8080:8080 -v /root/fafacms:/root/fafacms --env RUN_OPTS="-config=/root/fafacms/config.yaml -email_debug=true -auth_skip_debug=true -history_record=true -init_db=true" hunterhug/fafacms
 ```

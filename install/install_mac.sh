@@ -1,20 +1,20 @@
 #!/bin/bash
 
-mkdir /data
-chmod 777 /data
-mkdir /data/mydocker
-chmod 777 /data/mydocker
-mkdir -p /data/mydocker/redis/data
-mkdir -p /data/mydocker/redis/conf
-mkdir -p /data/mydocker/mysql/data
-mkdir -p /data/mydocker/mysql/conf
-mkdir -p /data/mydocker/fafacms
-mkdir -p /data/mydocker/fafacms/storage
-mkdir -p /data/mydocker/fafacms/storage_x
-mkdir -p /data/mydocker/fafacms/log
-cp my.cnf /data/mydocker/mysql/conf/my.cnf
-cp redis.conf /data/mydocker/redis/conf/redis.conf
-cp config_mac.json /data/mydocker/fafacms/config.json
+mkdir /opt
+chmod 777 /opt
+mkdir /opt/mydocker
+chmod 777 /opt/mydocker
+mkdir -p /opt/mydocker/redis/data
+mkdir -p /opt/mydocker/redis/conf
+mkdir -p /opt/mydocker/mysql/data
+mkdir -p /opt/mydocker/mysql/conf
+mkdir -p /opt/mydocker/fafacms
+mkdir -p /opt/mydocker/fafacms/storage
+mkdir -p /opt/mydocker/fafacms/storage_x
+mkdir -p /opt/mydocker/fafacms/log
+cp my.cnf /opt/mydocker/mysql/conf/my.cnf
+cp redis.conf /opt/mydocker/redis/conf/redis.conf
+cp config_mac.yaml /opt/mydocker/fafacms/config.yaml
 docker-compose stop
 docker-compose rm -f
 docker-compose up -d

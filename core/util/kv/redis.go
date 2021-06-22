@@ -6,12 +6,12 @@ import (
 )
 
 type MyRedisConf struct {
-	RedisHost        string
-	RedisMaxIdle     int
-	RedisMaxActive   int
-	RedisIdleTimeout int
-	RedisDB          int
-	RedisPass        string
+	RedisHost        string `yaml:"RedisHost"`
+	RedisMaxIdle     int    `yaml:"RedisMaxIdle"`
+	RedisMaxActive   int    `yaml:"RedisMaxActive"`
+	RedisIdleTimeout int    `yaml:"RedisIdleTimeout"`
+	RedisDB          int    `yaml:"RedisDB"`
+	RedisPass        string `yaml:"RedisPass"`
 }
 
 func NewRedis(redisConf *MyRedisConf) (pool *redis.Pool, err error) {

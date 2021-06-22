@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/hunterhug/fafacms)](https://goreportcard.com/report/github.com/hunterhug/fafacms)
 [![GitHub issues](https://img.shields.io/github/issues/hunterhug/fafacms.svg)](https://github.com/hunterhug/fafacms/issues)
 
-终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。[English Here](/README_EN.md)
+终极目标：实现一个可用的内容社区产品，围绕内容进行互动，知己交流。
 
 ## 项目说明
 
@@ -27,7 +27,7 @@
 10. 私信，用户间私聊。（附加）
 11. 用户和内容关键字搜索。（附加）
 
-![](/doc/web1.png)
+![](./docs/web1.png)
 
 ## 写给前端人员
 
@@ -48,15 +48,13 @@ chmod 777 install.sh
 sudo ./install.sh
 ```
 
-主要集成了`mysql:5.7.27`，`phpmyadmin:edge-4.9`和`redis:5.0.5`，端口分别为`3306`，`8000`，`6379`，
+主要集成了 `mysql:5.7.27`，`phpmyadmin:edge-4.9` 和 `redis:5.0.5`，端口分别为 `3306`，`8000`，`6379`，
 
-`MYSQL`账号密码：`root/123456789`，打开 [http://127.0.0.1:8000](http://127.0.0.1:8000) 可登录数据库进行数据查看，`Redis`密码：`123456789`。
+`MYSQL` 账号密码：`root/123456789`，打开 [http://127.0.0.1:8000](http://127.0.0.1:8000) 可登录数据库进行数据查看，`Redis` 密码：`123456789`。
 
-持久卷将会挂载在 `/data/mydocker` 中。具体配置和挂载卷可修改`docker-compose.yaml`和`config.json`文件。
+持久卷将会挂载在 `/data/mydocker` 中。具体配置和挂载卷可修改 `docker-compose.yaml` 和 `config.yaml` 文件。
 
 运行后打开浏览器: [http://127.0.0.1:8080](http://127.0.0.1:8080) 进行开发，超级管理员账户密码：`admin/admin`。 
-
-具体的API文档请见：[FaFa CMS接口文档](https://github.com/hunterhug/fafadoc)。 可以使用 [https://insomnia.rest](https://insomnia.rest) 进行接口调试，本项目文件夹 `json` 下存放着最新的调试文件。
 
 ## 写给后端人员
 
@@ -64,11 +62,11 @@ sudo ./install.sh
 
 微信支持:
 
-![](/doc/support/weixin.jpg)
+![](./docs/support/weixin.jpg)
 
 支付宝支持:
 
-![](/doc/support/alipay.png)
+![](./docs/support/alipay.png)
 
 ## CopyRight
 
