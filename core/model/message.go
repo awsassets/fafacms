@@ -40,10 +40,10 @@ const (
 // Message inside
 type Message struct {
 	Id                int64  `json:"id" xorm:"bigint pk autoincr"`
-	PrivateChanel     string `json:"private_chanel,omitempty" xorm:"index"`                                     // private message
-	SendUserId        int64  `json:"send_user_id,omitempty" xorm:"bigint index"`                                // private message
-	SendMessage       string `json:"send_message,omitempty"`                                                    // private message
-	SendDeleteTime    int64  `json:"send_delete_time,omitempty"`                                                // private message
+	PrivateChanel     string `json:"private_chanel,omitempty" xorm:"index"`                                               // private message
+	SendUserId        int64  `json:"send_user_id,omitempty" xorm:"bigint index"`                                          // private message
+	SendMessage       string `json:"send_message,omitempty"`                                                              // private message
+	SendDeleteTime    int64  `json:"send_delete_time,omitempty"`                                                          // private message
 	SendStatus        int    `json:"send_status" xorm:"notnull default(0) comment('0 normal 1 delete') TINYINT(1) index"` // private message
 	ReceiveUserId     int64  `json:"receive_user_id" xorm:"bigint index"`
 	ReceiveStatus     int    `json:"receive_status" xorm:"notnull default(0) comment('0 waiting,1 read,2 delete') TINYINT(1) index"`

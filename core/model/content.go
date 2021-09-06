@@ -46,7 +46,7 @@ var ContentSortName2 = []string{
 	"-first_publish_time",
 	"-publish_time",
 	"-views", "=comment_num", "=bad", "=cool",
-	"=seo",}
+	"=seo"}
 
 type ContentHistory struct {
 	Id         int64  `json:"id" xorm:"bigint pk autoincr"`

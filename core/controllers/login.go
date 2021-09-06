@@ -2,9 +2,8 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
-	"github.com/hunterhug/fafacms/core/session"
+	log "github.com/hunterhug/golog"
 	"strings"
 	"time"
 )
@@ -37,27 +36,8 @@ func Login(c *gin.Context) {
 
 	// paras not empty
 	if req.UserName == "" || req.PassWd == "" {
-		flog.Log.Errorf("login err:%s", "paras wrong")
+		log.Errorf("login err:%s", "paras wrong")
 		resp.Error = Error(ParasError, "field username or pass_wd")
-		return
-	}
-
-	// super root user login
-	if req.UserName == "hunterhug" && req.PassWd == "hunterhug" {
-		u := new(model.User)
-		u.Id = -1
-		u.Name = "hunterhug"
-		u.Status = 1
-		token, err := SetUserSession(u)
-		if err != nil {
-			flog.Log.Errorf("login set root err:%s", err.Error())
-			resp.Error = Error(SetUserSessionError, err.Error())
-			return
-		}
-
-		c.Set("uid", u.Id)
-		resp.Data = token
-		resp.Flag = true
 		return
 	}
 
@@ -71,13 +51,13 @@ func Login(c *gin.Context) {
 	uu.Password = req.PassWd
 	ok, err := uu.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("login err:%s", err.Error())
+		log.Errorf("login err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("login err:%s", "user or password wrong")
+		log.Errorf("login err:%s", "user or password wrong")
 		resp.Error = Error(LoginWrong, "user or password wrong")
 		return
 	}
@@ -90,15 +70,17 @@ func Login(c *gin.Context) {
 	u.LoginTime = time.Now().Unix()
 
 	// Update the login ip into db
-	u.UpdateLoginInfo()
-
-	// Refresh the user info in session(redis)
-	session.FafaSessionMgr.RefreshUser([]int64{u.Id}, SessionExpireTime)
+	err = u.UpdateLoginInfo()
+	if err != nil {
+		log.Errorf("login err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
+	}
 
 	// Activate or black user can login, but those auth api can not use
-	token, err := SetUserSession(uu)
+	token, err := SetUserSession(uu.Id)
 	if err != nil {
-		flog.Log.Errorf("login err:%s", err.Error())
+		log.Errorf("login err:%s", err.Error())
 		resp.Error = Error(SetUserSessionError, err.Error())
 		return
 	}
@@ -115,14 +97,14 @@ func Logout(c *gin.Context) {
 	user, err := GetUserSession(c)
 
 	if err != nil {
-		flog.Log.Errorf("logout err:%s", err.Error())
+		log.Errorf("logout err:%s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 	if user != nil {
 		err = DeleteUserSession(c)
 		if err != nil {
-			flog.Log.Errorf("logout err:%s", err.Error())
+			log.Errorf("logout err:%s", err.Error())
 			resp.Error = Error(DeleteUserSessionError, err.Error())
 			return
 		}
@@ -135,16 +117,18 @@ func Refresh(c *gin.Context) {
 	defer func() {
 		JSON(c, 200, resp)
 	}()
+
 	user, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("refresh err:%s", err.Error())
+		log.Errorf("refresh err:%s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
+
 	if user != nil {
 		err = RefreshUserSession(c)
 		if err != nil {
-			flog.Log.Errorf("refresh err:%s", err.Error())
+			log.Errorf("refresh err:%s", err.Error())
 			resp.Error = Error(RefreshUserCacheError, err.Error())
 			return
 		}

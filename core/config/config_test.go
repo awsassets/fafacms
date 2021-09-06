@@ -6,11 +6,9 @@ import (
 	"testing"
 )
 
-
 // gen a config json
 func TestJsonOutConfig(t *testing.T) {
-	c := Config{
-	}
+	c := Config{}
 
 	c.DefaultConfig.StoragePath = "/root/data"
 	c.DefaultConfig.WebPort = "8080"

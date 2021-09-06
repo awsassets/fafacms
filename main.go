@@ -1,16 +1,3 @@
-/*
-	版权所有，侵权必究
-	署名-非商业性使用-禁止演绎 4.0 国际
-	你可以在教育用途下使用该代码，但是禁止公司或个人用于商业用途!
-
-	All right reserved
-	Attribution-NonCommercial-NoDerivatives 4.0 International
-	You can use it for education only but can't make profits for any companies and individuals!
-
-	The Door of the program
-
-	FaFa awesome!
-**/
 package main
 
 import (
@@ -25,6 +12,7 @@ import (
 	"github.com/hunterhug/fafacms/core/session"
 	"github.com/hunterhug/fafacms/core/util"
 	"github.com/hunterhug/fafacms/core/util/mail"
+	log "github.com/hunterhug/golog"
 	"time"
 )
 
@@ -131,6 +119,7 @@ func initResource() (adminUrl map[string]int64) {
 // The Beauty Main
 // I'm FaFa
 func main() {
+	welcome()
 
 	// Package var init
 	mail.Debug = mailDebug
@@ -138,7 +127,6 @@ func main() {
 	controllers.TimeZone = timeZone
 	controllers.BadTime = banTime
 	controllers.AutoBan = autoBan
-	controllers.SingleLogin = singleLogin
 	controllers.SessionExpireTime = sessionExpireTime
 	controllers.CanScale = canScale
 	controllers.ScaleWidth = scaleWidth
@@ -149,30 +137,27 @@ func main() {
 	// Init global config
 	err = server.InitYamlConfig(configFile)
 	if err != nil {
-		panic(err)
+		log.Panicf("InitYamlConfig err: %s", err.Error())
+		return
 	}
+
+	log.Infof("Hi! Config is %#v", config.FaFaConfig)
 
 	// Init log
-	flog.InitLog(config.FaFaConfig.DefaultConfig.LogPath)
-
-	// Log can set to debug, i suggest not to change it
-	if config.FaFaConfig.DefaultConfig.LogDebug {
-		flog.SetLogLevel("DEBUG")
-	}
-
-	welcome()
-	flog.Log.Debugf("Hi! Config is %#v", config.FaFaConfig)
+	flog.InitLog(config.FaFaConfig.DefaultConfig.LogPath, config.FaFaConfig.DefaultConfig.LogDebug)
 
 	// Init db
 	err = server.InitRdb(config.FaFaConfig.DbConfig)
 	if err != nil {
-		panic(err)
+		log.Panicf("InitRdb err: %s", err.Error())
+		return
 	}
 
 	// Init session
-	err = session.InitSession(config.FaFaConfig.SessionConfig)
+	err = session.InitSession(config.FaFaConfig.SessionConfig, singleLogin)
 	if err != nil {
-		panic(err)
+		log.Panicf("InitSession err: %s", err.Error())
+		return
 	}
 
 	// Auto create db table
@@ -212,24 +197,24 @@ func main() {
 	// Web welcome home!
 	router.SetRouter(engine)
 
-	// V1 API, will may be change to V2...
+	// V1 API, will maybe change to V2...
 	v1 := engine.Group("/v1")
 	v1.Use(controllers.AuthFilter)
 
 	// Router Set
 	router.SetAPIRouter(v1, router.V1Router)
 
-	flog.Log.Noticef("Server run in %s", config.FaFaConfig.DefaultConfig.WebPort)
+	log.Infof("Server run in %s", config.FaFaConfig.DefaultConfig.WebPort)
 
 	err = engine.Run(config.FaFaConfig.DefaultConfig.WebPort)
 	if err != nil {
-		flog.Log.Errorf("Server run err: %s", err.Error())
+		log.Errorf("Server run err: %s", err.Error())
 		return
 	}
 }
 
 func welcome() {
-	flog.Log.Noticef("Hi! %s! A Nice CMS.", config.Title)
+	log.Infof("Hi! %s! A Nice CMS.", config.Title)
 	s := `
 ███████╗ █████╗ ███████╗ █████╗  ██████╗███╗   ███╗███████╗
 ██╔════╝██╔══██╗██╔════╝██╔══██╗██╔════╝████╗ ████║██╔════╝
@@ -237,6 +222,6 @@ func welcome() {
 ██╔══╝  ██╔══██║██╔══╝  ██╔══██║██║     ██║╚██╔╝██║╚════██║
 ██║     ██║  ██║██║     ██║  ██║╚██████╗██║ ╚═╝ ██║███████║
 ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚═╝     ╚═╝╚══════╝`
-	//flog.Log.Noticef("\n%s-v%s\n", s, config.Version, util.BuildTime())
-	flog.Log.Noticef("\n%s-%s\n", s, config.Version)
+	//log.Infof("\n%s-v%s\n", s, config.Version, util.BuildTime())
+	log.Infof("\n%s-%s\n", s, config.Version)
 }

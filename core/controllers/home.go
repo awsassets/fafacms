@@ -5,16 +5,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"github.com/hunterhug/fafacms/core/config"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/util"
+	log "github.com/hunterhug/golog"
 	"math"
 	"time"
 )
 
 var TimeZone int64 = 0
 
-// Local time format you know
+// GetSecond2DateTimes Local time format you know
 func GetSecond2DateTimes(second int64) string {
 	second = second + 3600*TimeZone
 	tm := time.Unix(second, 0)
@@ -91,7 +91,7 @@ func Peoples(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("Peoples err: %s", err.Error())
+		log.Errorf("Peoples err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -109,29 +109,15 @@ func Peoples(c *gin.Context) {
 		}
 	}
 
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("Peoples err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	users := make([]model.User, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		p.build(session, req.Sort, model.UserSortName)
-		err = session.Find(&users)
-		if err != nil {
-			flog.Log.Errorf("Peoples err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	p.build(session, req.Sort, model.UserSortName)
+	total, err := session.FindAndCount(&users)
+	if err != nil {
+		log.Errorf("Peoples err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	peoples := make([]People, 0, len(users))
@@ -230,7 +216,7 @@ func NodesInfo(c *gin.Context) {
 	}
 
 	if req.UserId == 0 && req.UserName == "" {
-		flog.Log.Errorf("NodesInfo err:%s", "")
+		log.Errorf("NodesInfo err:%s", "")
 		resp.Error = Error(ParasError, "user info empty")
 		return
 	}
@@ -252,7 +238,7 @@ func NodesInfo(c *gin.Context) {
 	Build(session, req.Sort, model.ContentNodeSortName)
 	err := session.Find(&nodes)
 	if err != nil {
-		flog.Log.Errorf("NodesInfo err:%s", err.Error())
+		log.Errorf("NodesInfo err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -341,14 +327,14 @@ func NodeInfo(c *gin.Context) {
 	}
 
 	if req.Id == 0 && req.Seo == "" {
-		flog.Log.Errorf("NodeInfo err: %s", "content node id or seo empty")
+		log.Errorf("NodeInfo err: %s", "content node id or seo empty")
 		resp.Error = Error(ParasError, "content node id or seo empty")
 		return
 	}
 
 	if req.Id == 0 && req.Seo != "" {
 		if req.UserId == 0 && req.UserName == "" {
-			flog.Log.Errorf("NodeInfo err: %s", "content node seo exist but user info empty")
+			log.Errorf("NodeInfo err: %s", "content node seo exist but user info empty")
 			resp.Error = Error(ParasError, "content node seo exist but user info empty")
 			return
 		}
@@ -378,13 +364,13 @@ func NodeInfo(c *gin.Context) {
 	v := new(model.ContentNode)
 	exist, err := session.Get(v)
 	if err != nil {
-		flog.Log.Errorf("NodeInfo err:%s", err.Error())
+		log.Errorf("NodeInfo err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("NodeInfo err:%s", "content node not found")
+		log.Errorf("NodeInfo err:%s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -413,7 +399,7 @@ func NodeInfo(c *gin.Context) {
 		ns := make([]model.ContentNode, 0)
 		err = model.FaFaRdb.Client.Where("parent_node_id=?", f.Id).And("status=?", 0).Find(&ns)
 		if err != nil {
-			flog.Log.Errorf("NodeInfo err:%s", err.Error())
+			log.Errorf("NodeInfo err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -472,13 +458,13 @@ func UserInfo(c *gin.Context) {
 	user.Name = req.Name
 	exist, err := model.FaFaRdb.Client.Where("status!=?", 0).Get(user)
 	if err != nil {
-		flog.Log.Errorf("UserInfo err:%s", err.Error())
+		log.Errorf("UserInfo err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UserInfo err:%s", "user  not found")
+		log.Errorf("UserInfo err:%s", "user  not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
@@ -568,13 +554,13 @@ func UserCount(c *gin.Context) {
 	user.Status = 1
 	exist, err := user.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("UserCount err:%s", err.Error())
+		log.Errorf("UserCount err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UserCount err:%s", "user not found")
+		log.Errorf("UserCount err:%s", "user not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
@@ -584,7 +570,7 @@ func UserCount(c *gin.Context) {
 	sql := fmt.Sprintf("SELECT DATE_FORMAT(from_unixtime(first_publish_time + %d * 3600)", TimeZone) + ",'%Y%m%d') as days,count(id) as count FROM `fafacms_content` WHERE first_publish_time!=0 and user_id=? and version>0 and status!=1 and status!=3 group by days;"
 	result, err := model.FaFaRdb.Client.QueryString(sql, req.UserId)
 	if err != nil {
-		flog.Log.Errorf("UserCount err:%s", err.Error())
+		log.Errorf("UserCount err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -671,7 +657,7 @@ func Contents(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("Contents err: %s", err.Error())
+		log.Errorf("Contents err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -717,33 +703,19 @@ func Contents(c *gin.Context) {
 		session.And("publish_time<?", req.PublishTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("Contents err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	// if count>0 start list
 	cs := make([]model.Content, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.ContentSortName2)
-		// do query
-		err = session.Omit("pre_describe", "pre_title").Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("Contents err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.ContentSortName2)
+
+	// do query
+	total, err := session.Omit("pre_describe", "pre_title").FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("Contents err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -816,20 +788,20 @@ func Content(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("Content err: %s", err.Error())
+		log.Errorf("Content err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if req.Id == 0 && req.Seo == "" {
-		flog.Log.Errorf("Content err: %s", "content id or seo empty")
+		log.Errorf("Content err: %s", "content id or seo empty")
 		resp.Error = Error(ParasError, "content id or seo empty")
 		return
 	}
 
 	if req.Id == 0 && req.Seo != "" {
 		if req.UserId == 0 && req.UserName == "" {
-			flog.Log.Errorf("Content err: %s", "content seo exist but user info empty")
+			log.Errorf("Content err: %s", "content seo exist but user info empty")
 			resp.Error = Error(ParasError, "content seo exist but user info empty")
 			return
 		}
@@ -842,13 +814,13 @@ func Content(c *gin.Context) {
 	content.Seo = req.Seo
 	exist, err := content.GetByRawAll()
 	if err != nil {
-		flog.Log.Errorf("Content err: %s", err.Error())
+		log.Errorf("Content err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("Content err: %s", "content not found")
+		log.Errorf("Content err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -856,23 +828,23 @@ func Content(c *gin.Context) {
 	if content.Status == 0 {
 
 	} else if content.Status == 2 {
-		flog.Log.Errorf("Content err: %s", "content ban")
+		log.Errorf("Content err: %s", "content ban")
 		resp.Error = Error(ContentBanPermit, "")
 		return
 	} else {
-		flog.Log.Errorf("Content err: %s", "content not found for it hide")
+		log.Errorf("Content err: %s", "content not found for it hide")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if content.Version == 0 {
-		flog.Log.Errorf("Content err: %s", "content not found for it not publish")
+		log.Errorf("Content err: %s", "content not found for it not publish")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if content.Password != "" && content.Password != req.Password {
-		flog.Log.Errorf("Content err: %s", "content password")
+		log.Errorf("Content err: %s", "content password")
 		resp.Error = Error(ContentPasswordWrong, "")
 		return
 	}
@@ -913,7 +885,7 @@ func Content(c *gin.Context) {
 		pre, next, err := cxx.GetBrotherContent()
 
 		if err != nil {
-			flog.Log.Errorf("Content err: %s", err.Error())
+			log.Errorf("Content err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}

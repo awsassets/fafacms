@@ -2,14 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/hunterhug/fafacms/core/util/kv"
 	"github.com/hunterhug/fafacms/core/util/mail"
 	"github.com/hunterhug/fafacms/core/util/oss"
 	"github.com/hunterhug/fafacms/core/util/rdb"
 )
 
 var (
-	//  Global config!
+	// FaFaConfig Global config!
 	FaFaConfig *Config
 )
 
@@ -17,11 +16,20 @@ type Config struct {
 	DefaultConfig MyConfig       `yaml:"DefaultConfig"` // default config
 	OssConfig     oss.Key        `yaml:"OssConfig"`     // oss like aws s3
 	DbConfig      rdb.MyDbConfig `yaml:"DbConfig"`      // mysql config
-	SessionConfig kv.MyRedisConf `yaml:"SessionConfig"` // redis config for user session
+	SessionConfig MyRedisConf    `yaml:"SessionConfig"` // redis config for user session
 	MailConfig    mail.Sender    `yaml:"MailConfig"`    // email config
 }
 
-// Some especial my config
+type MyRedisConf struct {
+	RedisHost        string `yaml:"RedisHost"`
+	RedisMaxIdle     int    `yaml:"RedisMaxIdle"`
+	RedisMaxActive   int    `yaml:"RedisMaxActive"`
+	RedisIdleTimeout int    `yaml:"RedisIdleTimeout"`
+	RedisDB          int    `yaml:"RedisDB"`
+	RedisPass        string `yaml:"RedisPass"`
+}
+
+// MyConfig Some especial my config
 type MyConfig struct {
 	WebPort       string `yaml:"WebPort"`
 	LogPath       string `yaml:"LogPath"`
@@ -31,7 +39,7 @@ type MyConfig struct {
 	CloseRegister bool   `yaml:"CloseRegister"`
 }
 
-// Let the config struct to json file, just for test
+// JsonOutConfig Let the config struct to json file, just for test
 func JsonOutConfig(config Config) (string, error) {
 	raw, err := json.Marshal(config)
 	if err != nil {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/util"
+	log "github.com/hunterhug/golog"
 	"math"
 )
 
@@ -40,7 +40,7 @@ func ListResource(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListResource err: %s", err.Error())
+		log.Errorf("ListResource err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -67,39 +67,24 @@ func ListResource(c *gin.Context) {
 		session.And("url_hash=?", urlHash)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListResource err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	r := make([]model.Resource, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.ResourceSortName)
-		// do query
-		err = session.Find(&r)
-		if err != nil {
-			flog.Log.Errorf("ListResource err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.ResourceSortName)
+
+	// do query
+	total, err := session.FindAndCount(&r)
+	if err != nil {
+		log.Errorf("ListResource err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
 	respResult.Resources = r
 	p.Pages = int(math.Ceil(float64(total) / float64(p.Limit)))
-p.Total = int(total)
+	p.Total = int(total)
 	respResult.PageHelp = *p
 	resp.Data = respResult
 	resp.Flag = true
@@ -125,13 +110,13 @@ func AssignResourceToGroup(c *gin.Context) {
 
 	resourceNums := len(req.Resources)
 	if resourceNums == 0 && req.ResourceRelease != 1 {
-		flog.Log.Errorf("AssignGroupAndResource err:%s", "resources empty")
+		log.Errorf("AssignGroupAndResource err:%s", "resources empty")
 		resp.Error = Error(ParasError, "resources empty")
 		return
 	}
 
 	if req.GroupId == 0 {
-		flog.Log.Errorf("AssignGroupAndResource err:%s", "group id empty")
+		log.Errorf("AssignGroupAndResource err:%s", "group id empty")
 		resp.Error = Error(ParasError, "group_id")
 		return
 	}
@@ -140,13 +125,13 @@ func AssignResourceToGroup(c *gin.Context) {
 	g.Id = req.GroupId
 	exist, err := g.GetById()
 	if err != nil {
-		flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+		log.Errorf("AssignGroupAndResource err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("AssignGroupAndResource err:%s", "group not found")
+		log.Errorf("AssignGroupAndResource err:%s", "group not found")
 		resp.Error = Error(GroupNotFound, "")
 		return
 	}
@@ -154,13 +139,13 @@ func AssignResourceToGroup(c *gin.Context) {
 	if resourceNums > 0 {
 		num, err := model.FaFaRdb.Client.Table(new(model.Resource)).In("id", req.Resources).Count()
 		if err != nil {
-			flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+			log.Errorf("AssignGroupAndResource err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if int(num) != resourceNums {
-			flog.Log.Errorf("AssignGroupAndResource err:%s", "resource wrong")
+			log.Errorf("AssignGroupAndResource err:%s", "resource wrong")
 			resp.Error = Error(ResourceCountNumNotRight, fmt.Sprintf("resource wrong:%d!=%d", num, resourceNums))
 			return
 		}
@@ -171,7 +156,7 @@ func AssignResourceToGroup(c *gin.Context) {
 
 	err = session.Begin()
 	if err != nil {
-		flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+		log.Errorf("AssignGroupAndResource err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -183,7 +168,7 @@ func AssignResourceToGroup(c *gin.Context) {
 	_, err = session.Where("group_id=?", req.GroupId).Delete(new(model.GroupResource))
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+		log.Errorf("AssignGroupAndResource err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -196,7 +181,7 @@ func AssignResourceToGroup(c *gin.Context) {
 		_, err = session.Insert(rs)
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+			log.Errorf("AssignGroupAndResource err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -205,7 +190,7 @@ func AssignResourceToGroup(c *gin.Context) {
 	err = session.Commit()
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("AssignGroupAndResource err:%s", err.Error())
+		log.Errorf("AssignGroupAndResource err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}

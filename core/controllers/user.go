@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"github.com/hunterhug/fafacms/core/config"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/session"
 	"github.com/hunterhug/fafacms/core/util"
 	"github.com/hunterhug/fafacms/core/util/mail"
+	log "github.com/hunterhug/golog"
 	"math"
 	"strings"
 	"time"
@@ -31,7 +31,7 @@ type RegisterUserRequest struct {
 	ImagePath     string `json:"image_path"`
 }
 
-// User register, anyone can use email register
+// RegisterUser User register, anyone can use email register
 func RegisterUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(RegisterUserRequest)
@@ -53,7 +53,7 @@ func RegisterUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err: %s", err.Error())
+		log.Errorf("RegisterUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -61,13 +61,13 @@ func RegisterUser(c *gin.Context) {
 	// name can not repeat and prefix with @
 	u := new(model.User)
 	if strings.Contains(req.Name, "@") {
-		flog.Log.Errorf("RegisterUser err: %s", "@ can not be")
+		log.Errorf("RegisterUser err: %s", "@ can not be")
 		resp.Error = Error(ParasError, "@ can not be")
 		return
 	}
 
 	if req.NickName == model.AnonymousUser {
-		flog.Log.Errorf("RegisterUser err: %s", "can not be anonymous name")
+		log.Errorf("RegisterUser err: %s", "can not be anonymous name")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -75,12 +75,12 @@ func RegisterUser(c *gin.Context) {
 	u.Name = req.Name
 	repeat, err := u.IsNameRepeat()
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err: %s", err.Error())
+		log.Errorf("RegisterUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("RegisterUser err: %s", "name already use by other")
+		log.Errorf("RegisterUser err: %s", "name already use by other")
 		resp.Error = Error(UserNameAlreadyBeUsed, "")
 		return
 	}
@@ -89,12 +89,12 @@ func RegisterUser(c *gin.Context) {
 	u.NickName = req.NickName
 	repeat, err = u.IsNickNameRepeat()
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err: %s", err.Error())
+		log.Errorf("RegisterUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("RegisterUser err: %s", "nickname already use by other")
+		log.Errorf("RegisterUser err: %s", "nickname already use by other")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -103,12 +103,12 @@ func RegisterUser(c *gin.Context) {
 	u.Email = req.Email
 	repeat, err = u.IsEmailRepeat()
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err: %s", err.Error())
+		log.Errorf("RegisterUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("RegisterUser err: %s", "email already use by other")
+		log.Errorf("RegisterUser err: %s", "email already use by other")
 		resp.Error = Error(EmailAlreadyBeUsed, "")
 		return
 	}
@@ -133,14 +133,14 @@ func RegisterUser(c *gin.Context) {
 	mm.Body = fmt.Sprintf(mm.Body, "Register", u.ActivateCode)
 	err = mm.Sent()
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err:%s", err.Error())
+		log.Errorf("RegisterUser err:%s", err.Error())
 		resp.Error = Error(EmailSendError, err.Error())
 		return
 	}
 
 	err = u.InsertOne()
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err:%s", err.Error())
+		log.Errorf("RegisterUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -153,7 +153,7 @@ func RegisterUser(c *gin.Context) {
 	resp.Flag = true
 }
 
-// Create user, admin url
+// CreateUser Create user, admin url
 func CreateUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(RegisterUserRequest)
@@ -169,20 +169,20 @@ func CreateUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("CreateUser err: %s", err.Error())
+		log.Errorf("CreateUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	u := new(model.User)
 	if strings.Contains(req.Name, "@") {
-		flog.Log.Errorf("CreateUser err: %s", "@ can not be")
+		log.Errorf("CreateUser err: %s", "@ can not be")
 		resp.Error = Error(ParasError, "@ can not be")
 		return
 	}
 
 	if req.NickName == model.AnonymousUser {
-		flog.Log.Errorf("CreateUser err: %s", "can not be anonymous name")
+		log.Errorf("CreateUser err: %s", "can not be anonymous name")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -190,12 +190,12 @@ func CreateUser(c *gin.Context) {
 	u.Name = req.Name
 	repeat, err := u.IsNameRepeat()
 	if err != nil {
-		flog.Log.Errorf("CreateUser err: %s", err.Error())
+		log.Errorf("CreateUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("CreateUser err: %s", "name already use by other")
+		log.Errorf("CreateUser err: %s", "name already use by other")
 		resp.Error = Error(UserNameAlreadyBeUsed, "")
 		return
 	}
@@ -203,12 +203,12 @@ func CreateUser(c *gin.Context) {
 	u.NickName = req.NickName
 	repeat, err = u.IsNickNameRepeat()
 	if err != nil {
-		flog.Log.Errorf("CreateUser err: %s", err.Error())
+		log.Errorf("CreateUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("CreateUser err: %s", "nickname already use by other")
+		log.Errorf("CreateUser err: %s", "nickname already use by other")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -217,12 +217,12 @@ func CreateUser(c *gin.Context) {
 	u.Email = req.Email
 	repeat, err = u.IsEmailRepeat()
 	if err != nil {
-		flog.Log.Errorf("CreateUser err: %s", err.Error())
+		log.Errorf("CreateUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if repeat {
-		flog.Log.Errorf("CreateUser err: %s", "email already use by other")
+		log.Errorf("CreateUser err: %s", "email already use by other")
 		resp.Error = Error(EmailAlreadyBeUsed, "")
 		return
 	}
@@ -234,13 +234,13 @@ func CreateUser(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("CreateUser err:%s", err.Error())
+			log.Errorf("CreateUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("CreateUser err: image not exist")
+			log.Errorf("CreateUser err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "")
 			return
 		}
@@ -261,7 +261,7 @@ func CreateUser(c *gin.Context) {
 	u.ActivateTime = time.Now().Unix()
 	err = u.InsertOne()
 	if err != nil {
-		flog.Log.Errorf("CreateUser err:%s", err.Error())
+		log.Errorf("CreateUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -274,7 +274,7 @@ type ActivateUserRequest struct {
 	Code  string `json:"code" validate:"required"`
 }
 
-// Activate by oneself
+// ActivateUser Activate by oneself
 func ActivateUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(ActivateUserRequest)
@@ -290,7 +290,7 @@ func ActivateUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ActivateUser err: %s", err.Error())
+		log.Errorf("ActivateUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -303,18 +303,18 @@ func ActivateUser(c *gin.Context) {
 	// whether exist
 	exist, err := u.IsActivateCodeExist()
 	if err != nil {
-		flog.Log.Errorf("ActivateUser err:%s", err.Error())
+		log.Errorf("ActivateUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("ActivateUser err:%s", "not exist code")
+		log.Errorf("ActivateUser err:%s", "not exist code")
 		resp.Error = Error(ActivateCodeWrong, "not exist code")
 		return
 	}
 
-	// has been activate direct return
+	// has been activated direct return
 	if u.Status != 0 {
 		resp.Flag = true
 		return
@@ -322,22 +322,22 @@ func ActivateUser(c *gin.Context) {
 
 	// activate code expired, must gen again
 	if u.ActivateCodeExpired < time.Now().Unix() {
-		flog.Log.Errorf("ActivateUser err:%s", "code expired")
+		log.Errorf("ActivateUser err:%s", "code expired")
 		resp.Error = Error(ActivateCodeExpired, "")
 		return
 	} else {
 		u.Status = 1
 		err = u.UpdateActivateStatus()
 		if err != nil {
-			flog.Log.Errorf("ActivateUser err:%s", err.Error())
+			log.Errorf("ActivateUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		// activate success will soon set session
-		token, err := SetUserSession(u)
+		token, err := SetUserSession(u.Id)
 		if err != nil {
-			flog.Log.Errorf("ActivateUser err:%s", err.Error())
+			log.Errorf("ActivateUser err:%s", err.Error())
 			resp.Error = Error(SetUserSessionError, err.Error())
 			return
 		}
@@ -353,7 +353,7 @@ type ResendActivateCodeToUserRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-// Activate code expire must resent email ang get new one
+// ResendActivateCodeToUser Activate code expire must resent email ang get new one
 func ResendActivateCodeToUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(ResendActivateCodeToUserRequest)
@@ -369,7 +369,7 @@ func ResendActivateCodeToUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ResendActivateCodeToUser err: %s", err.Error())
+		log.Errorf("ResendActivateCodeToUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -379,12 +379,12 @@ func ResendActivateCodeToUser(c *gin.Context) {
 	u.Email = req.Email
 	ok, err := u.GetUserByEmail()
 	if err != nil {
-		flog.Log.Errorf("ResendActivateCodeToUser err:%s", err.Error())
+		log.Errorf("ResendActivateCodeToUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !ok {
-		flog.Log.Errorf("ResendActivateCodeToUser err:%s", "email not found")
+		log.Errorf("ResendActivateCodeToUser err:%s", "email not found")
 		resp.Error = Error(EmailNotFound, "")
 		return
 	}
@@ -394,7 +394,7 @@ func ResendActivateCodeToUser(c *gin.Context) {
 		return
 	} else if u.ActivateCodeExpired > time.Now().Unix() {
 		// can not gen a new code because expire time not reach
-		flog.Log.Errorf("ResendUser err:%s", "code not expired")
+		log.Errorf("ResendUser err:%s", "code not expired")
 		resp.Error = Error(ActivateCodeNotExpired, "")
 		return
 	}
@@ -402,7 +402,7 @@ func ResendActivateCodeToUser(c *gin.Context) {
 	// update activate code, expire after 5 min
 	err = u.UpdateActivateCode()
 	if err != nil {
-		flog.Log.Errorf("ResendUser err:%s", err.Error())
+		log.Errorf("ResendUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -415,7 +415,7 @@ func ResendActivateCodeToUser(c *gin.Context) {
 	mm.Body = fmt.Sprintf(mm.Body, "Register", u.ActivateCode)
 	err = mm.Sent()
 	if err != nil {
-		flog.Log.Errorf("ResendUser err:%s", err.Error())
+		log.Errorf("ResendUser err:%s", err.Error())
 		resp.Error = Error(EmailSendError, err.Error())
 		return
 	}
@@ -426,7 +426,7 @@ type ForgetPasswordRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-// When user want to modify password or forget password, can gen a code to change password
+// ForgetPasswordOfUser When user want to modify password or forget password, can gen a code to change password
 func ForgetPasswordOfUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(ForgetPasswordRequest)
@@ -442,7 +442,7 @@ func ForgetPasswordOfUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("RegisterUser err: %s", err.Error())
+		log.Errorf("RegisterUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -451,12 +451,12 @@ func ForgetPasswordOfUser(c *gin.Context) {
 	u.Email = req.Email
 	ok, err := u.GetUserByEmail()
 	if err != nil {
-		flog.Log.Errorf("ForgetPassword err:%s", err.Error())
+		log.Errorf("ForgetPassword err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !ok {
-		flog.Log.Errorf("ForgetPassword err:%s", "email not found")
+		log.Errorf("ForgetPassword err:%s", "email not found")
 		resp.Error = Error(EmailNotFound, "")
 		return
 	}
@@ -466,7 +466,7 @@ func ForgetPasswordOfUser(c *gin.Context) {
 		// code is valid in 5 min
 		err = u.UpdateCode()
 		if err != nil {
-			flog.Log.Errorf("ForgetPassword comerr:%s", err.Error())
+			log.Errorf("ForgetPassword comerr:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -479,13 +479,13 @@ func ForgetPasswordOfUser(c *gin.Context) {
 		mm.Body = fmt.Sprintf(mm.Body, "Forget Password", u.ResetCode)
 		err = mm.Sent()
 		if err != nil {
-			flog.Log.Errorf("ForgetPassword err:%s", err.Error())
+			log.Errorf("ForgetPassword err:%s", err.Error())
 			resp.Error = Error(EmailSendError, err.Error())
 			return
 		}
 
 	} else {
-		flog.Log.Errorf("ForgetPassword err:%s", "reset code expired time not reach")
+		log.Errorf("ForgetPassword err:%s", "reset code expired time not reach")
 		resp.Error = Error(ResetCodeExpiredTimeNotReach, "")
 		return
 	}
@@ -500,7 +500,7 @@ type ChangePasswordRequest struct {
 	RePassword string `json:"repassword" validate:"eqfield=Password"`
 }
 
-// Change password by a forget password email code
+// ChangePasswordOfUser Change password by a forged password email code
 func ChangePasswordOfUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(ChangePasswordRequest)
@@ -516,7 +516,7 @@ func ChangePasswordOfUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ChangePassword err: %s", err.Error())
+		log.Errorf("ChangePassword err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -525,12 +525,12 @@ func ChangePasswordOfUser(c *gin.Context) {
 	u.Email = req.Email
 	ok, err := u.GetUserByEmail()
 	if err != nil {
-		flog.Log.Errorf("ChangePassword err:%s", err.Error())
+		log.Errorf("ChangePassword err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !ok {
-		flog.Log.Errorf("ChangePassword err:%s", "email not found")
+		log.Errorf("ChangePassword err:%s", "email not found")
 		resp.Error = Error(EmailNotFound, "")
 		return
 	}
@@ -540,12 +540,12 @@ func ChangePasswordOfUser(c *gin.Context) {
 		u.Password = req.Password
 		err = u.UpdatePassword()
 		if err != nil {
-			flog.Log.Errorf("ChangePassword err:%s", err.Error())
+			log.Errorf("ChangePassword err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 	} else {
-		flog.Log.Errorf("ChangePassword err:%s", "reset code wrong")
+		log.Errorf("ChangePassword err:%s", "reset code wrong")
 		resp.Error = Error(RestCodeWrong, "")
 		return
 	}
@@ -582,15 +582,15 @@ func UpdateUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateUser err: %s", err.Error())
+		log.Errorf("UpdateUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
-	// get oneself's info
+	// get oneself info
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateUser err: %s", err.Error())
+		log.Errorf("UpdateUser err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -599,13 +599,13 @@ func UpdateUser(c *gin.Context) {
 	uuu.Id = uu.Id
 	ok, err := uuu.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("UpdateUser err: %s", err.Error())
+		log.Errorf("UpdateUser err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("UpdateUser err: %s", "user not found")
+		log.Errorf("UpdateUser err: %s", "user not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
@@ -618,20 +618,20 @@ func UpdateUser(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("UpdateUser err:%s", err.Error())
+			log.Errorf("UpdateUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("UpdateUser err: image not exist")
+			log.Errorf("UpdateUser err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "")
 			return
 		}
 	}
 
 	if req.NickName == model.AnonymousUser {
-		flog.Log.Errorf("UpdateUser err: %s", "can not be anonymous name")
+		log.Errorf("UpdateUser err: %s", "can not be anonymous name")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -641,7 +641,7 @@ func UpdateUser(c *gin.Context) {
 		if uuu.NickNameUpdateTime != 0 {
 			passTime := time.Now().Unix() - uuu.NickNameUpdateTime
 			if passTime < 15*24*3600 {
-				flog.Log.Errorf("UpdateUser err: %s", "nickname can not change time not reach")
+				log.Errorf("UpdateUser err: %s", "nickname can not change time not reach")
 				resp.Error = Error(NickNameCanNotChangeForTimeNotReach, fmt.Sprintf("remain %d days", passTime/(24*3600)))
 				return
 			}
@@ -650,12 +650,12 @@ func UpdateUser(c *gin.Context) {
 		u.NickNameUpdateTime = time.Now().Unix()
 		repeat, err := u.IsNickNameRepeat()
 		if err != nil {
-			flog.Log.Errorf("UpdateUser err: %s", err.Error())
+			log.Errorf("UpdateUser err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if repeat {
-			flog.Log.Errorf("UpdateUser err: %s", "nickname already use by other")
+			log.Errorf("UpdateUser err: %s", "nickname already use by other")
 			resp.Error = Error(NickNameAlreadyBeUsed, "")
 			return
 		}
@@ -670,14 +670,14 @@ func UpdateUser(c *gin.Context) {
 	u.WeiBo = req.WeiBo
 	err = u.UpdateInfo()
 	if err != nil {
-		flog.Log.Errorf("UpdateUser err:%s", err.Error())
+		log.Errorf("UpdateUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
-	err = session.FafaSessionMgr.RefreshUser([]int64{u.Id}, SessionExpireTime)
+	err = session.Mgr.RefreshUser([]string{fmt.Sprintf("%d", u.Id)}, SessionExpireTime)
 	if err != nil {
-		flog.Log.Errorf("UpdateUser err:%s", err.Error())
+		log.Errorf("UpdateUser err:%s", err.Error())
 		resp.Error = Error(RefreshUserCacheError, err.Error())
 		return
 	}
@@ -686,7 +686,7 @@ func UpdateUser(c *gin.Context) {
 	resp.Data = u
 }
 
-// Take oneself's user info
+// TakeUser Take oneself user info
 func TakeUser(c *gin.Context) {
 	resp := new(Resp)
 	defer func() {
@@ -696,7 +696,7 @@ func TakeUser(c *gin.Context) {
 	// just get from session
 	u, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("TakeUser err:%s", err.Error())
+		log.Errorf("TakeUser err:%s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -705,13 +705,13 @@ func TakeUser(c *gin.Context) {
 	user.Id = u.Id
 	exist, err := model.FaFaRdb.Client.Get(user)
 	if err != nil {
-		flog.Log.Errorf("TakeUser err:%s", err.Error())
+		log.Errorf("TakeUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("TakeUser err:%s", "user  not found")
+		log.Errorf("TakeUser err:%s", "user  not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
@@ -791,7 +791,7 @@ type ListUserResponse struct {
 	PageHelp
 }
 
-// List user, admin url
+// ListUser List user, admin url
 func ListUser(c *gin.Context) {
 	resp := new(Resp)
 
@@ -809,100 +809,85 @@ func ListUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListUser err: %s", err.Error())
+		log.Errorf("ListUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	// new query list session
-	session := model.FaFaRdb.Client.NewSession()
-	defer session.Close()
+	sess := model.FaFaRdb.Client.NewSession()
+	defer sess.Close()
 
 	// group list where prepare
-	session.Table(new(model.User)).Where("1=1")
+	sess.Table(new(model.User)).Where("1=1")
 
 	// query prepare
 	if req.Id != 0 {
-		session.And("id=?", req.Id)
+		sess.And("id=?", req.Id)
 	}
 	if req.Name != "" {
-		session.And("name=?", req.Name)
+		sess.And("name=?", req.Name)
 	}
 
 	if req.Status != -1 {
-		session.And("status=?", req.Status)
+		sess.And("status=?", req.Status)
 	}
 
 	if req.Gender != -1 {
-		session.And("gender=?", req.Gender)
+		sess.And("gender=?", req.Gender)
 	}
 
 	if req.Vip != -1 {
-		session.And("vip=?", req.Vip)
+		sess.And("vip=?", req.Vip)
 	}
 
 	if req.QQ != "" {
-		session.And("q_q=?", req.QQ)
+		sess.And("q_q=?", req.QQ)
 	}
 
 	if req.Email != "" {
-		session.And("email=?", req.Email)
+		sess.And("email=?", req.Email)
 	}
 
 	if req.Github != "" {
-		session.And("github=?", req.Github)
+		sess.And("github=?", req.Github)
 	}
 
 	if req.WeiBo != "" {
-		session.And("wei_bo=?", req.WeiBo)
+		sess.And("wei_bo=?", req.WeiBo)
 	}
 	if req.WeChat != "" {
-		session.And("we_chat=?", req.WeChat)
+		sess.And("we_chat=?", req.WeChat)
 	}
 
 	if req.CreateTimeBegin > 0 {
-		session.And("create_time>=?", req.CreateTimeBegin)
+		sess.And("create_time>=?", req.CreateTimeBegin)
 	}
 
 	if req.CreateTimeEnd > 0 {
-		session.And("create_time<?", req.CreateTimeEnd)
+		sess.And("create_time<?", req.CreateTimeEnd)
 	}
 
 	if req.UpdateTimeBegin > 0 {
-		session.And("update_time>=?", req.UpdateTimeBegin)
+		sess.And("update_time>=?", req.UpdateTimeBegin)
 	}
 
 	if req.UpdateTimeEnd > 0 {
-		session.And("update_time<?", req.UpdateTimeEnd)
+		sess.And("update_time<?", req.UpdateTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListUser err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	users := make([]model.User, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.UserSortName)
-		// do query
-		err = session.Find(&users)
-		if err != nil {
-			flog.Log.Errorf("ListUser err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(sess, req.Sort, model.UserSortName)
+
+	// do query
+	total, err := sess.FindAndCount(&users)
+	if err != nil {
+		log.Errorf("ListUser err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -922,7 +907,7 @@ type ListGroupUserResponse struct {
 	Users []model.User `json:"users"`
 }
 
-// List the users of group
+// ListGroupUser List the users of group
 func ListGroupUser(c *gin.Context) {
 	resp := new(Resp)
 
@@ -940,21 +925,21 @@ func ListGroupUser(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListGroupUser err: %s", err.Error())
+		log.Errorf("ListGroupUser err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	// new query list session
-	session := model.FaFaRdb.Client.NewSession()
-	defer session.Close()
+	sess := model.FaFaRdb.Client.NewSession()
+	defer sess.Close()
 
 	users := make([]model.User, 0)
 
 	// group list where prepare
-	err = session.Table(new(model.User)).Where("group_id=?", req.GroupId).Find(&users)
+	err = sess.Table(new(model.User)).Where("group_id=?", req.GroupId).Find(&users)
 	if err != nil {
-		flog.Log.Errorf("ListUser err:%s", err.Error())
+		log.Errorf("ListUser err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -970,7 +955,7 @@ type AssignGroupRequest struct {
 	Users        []int64 `json:"users"`
 }
 
-// Assign user to a group, every user can only have less than one group
+// AssignGroupToUser Assign user to a group, every user can only have less than one group
 func AssignGroupToUser(c *gin.Context) {
 	resp := new(Resp)
 	req := new(AssignGroupRequest)
@@ -984,7 +969,7 @@ func AssignGroupToUser(c *gin.Context) {
 	}
 
 	if len(req.Users) == 0 {
-		flog.Log.Errorf("AssignGroupToUser err:%s", "users empty")
+		log.Errorf("AssignGroupToUser err:%s", "users empty")
 		resp.Error = Error(ParasError, "users empty")
 		return
 	}
@@ -994,21 +979,26 @@ func AssignGroupToUser(c *gin.Context) {
 		u := new(model.User)
 		num, err := model.FaFaRdb.Client.Cols("group_id").In("id", req.Users).Update(u)
 		if err != nil {
-			flog.Log.Errorf("AssignGroupToUser err:%s", err.Error())
+			log.Errorf("AssignGroupToUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
-		err = session.FafaSessionMgr.RefreshUser(req.Users, SessionExpireTime)
+		uidList := make([]string, 0)
+		for _, v := range req.Users {
+			uidList = append(uidList, fmt.Sprintf("%d", v))
+		}
+
+		err = session.Mgr.RefreshUser(uidList, SessionExpireTime)
 		if err != nil {
-			flog.Log.Errorf("AssignGroupToUser err:%s", err.Error())
+			log.Errorf("AssignGroupToUser err:%s", err.Error())
 			resp.Error = Error(RefreshUserCacheError, err.Error())
 			return
 		}
 		resp.Data = num
 	} else {
 		if req.GroupId == 0 {
-			flog.Log.Errorf("AssignGroupToUser err:%s", "group id empty")
+			log.Errorf("AssignGroupToUser err:%s", "group id empty")
 			resp.Error = Error(ParasError, "group_id empty")
 			return
 		}
@@ -1017,13 +1007,13 @@ func AssignGroupToUser(c *gin.Context) {
 		g.Id = req.GroupId
 		exist, err := g.GetById()
 		if err != nil {
-			flog.Log.Errorf("AssignGroupToUser err:%s", err.Error())
+			log.Errorf("AssignGroupToUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !exist {
-			flog.Log.Errorf("AssignGroupToUser err:%s", "group not found")
+			log.Errorf("AssignGroupToUser err:%s", "group not found")
 			resp.Error = Error(GroupNotFound, "")
 			return
 		}
@@ -1032,14 +1022,19 @@ func AssignGroupToUser(c *gin.Context) {
 		u.GroupId = req.GroupId
 		num, err := model.FaFaRdb.Client.Cols("group_id").In("id", req.Users).Update(u)
 		if err != nil {
-			flog.Log.Errorf("AssignGroupToUser err:%s", err.Error())
+			log.Errorf("AssignGroupToUser err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
-		err = session.FafaSessionMgr.RefreshUser(req.Users, SessionExpireTime)
+		uidList := make([]string, 0)
+		for _, v := range req.Users {
+			uidList = append(uidList, fmt.Sprintf("%d", v))
+		}
+
+		err = session.Mgr.RefreshUser(uidList, SessionExpireTime)
 		if err != nil {
-			flog.Log.Errorf("AssignGroupToUser err:%s", err.Error())
+			log.Errorf("AssignGroupToUser err:%s", err.Error())
 			resp.Error = Error(RefreshUserCacheError, err.Error())
 			return
 		}
@@ -1057,7 +1052,7 @@ type UpdateUserAdminRequest struct {
 	Vip      int    `json:"vip" validate:"oneof=0 1 2"`    // 1 become vip, 2 no vip
 }
 
-// Update user info, admin url. Can change user password, black one user, change nickname etc.
+// UpdateUserAdmin Update user info, admin url. Can change user password, black one user, change nickname etc.
 func UpdateUserAdmin(c *gin.Context) {
 	resp := new(Resp)
 	req := new(UpdateUserAdminRequest)
@@ -1073,7 +1068,7 @@ func UpdateUserAdmin(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateUserAdmin err: %s", err.Error())
+		log.Errorf("UpdateUserAdmin err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -1082,20 +1077,20 @@ func UpdateUserAdmin(c *gin.Context) {
 	uu.Id = req.Id
 	ok, err := uu.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("UpdateUserAdmin err: %s", err.Error())
+		log.Errorf("UpdateUserAdmin err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("UpdateUserAdmin err: %s", "user not found")
+		log.Errorf("UpdateUserAdmin err: %s", "user not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
 
 	u := new(model.User)
 	if req.NickName == model.AnonymousUser {
-		flog.Log.Errorf("UpdateUserAdmin err: %s", "can not be anonymous name")
+		log.Errorf("UpdateUserAdmin err: %s", "can not be anonymous name")
 		resp.Error = Error(NickNameAlreadyBeUsed, "")
 		return
 	}
@@ -1105,12 +1100,12 @@ func UpdateUserAdmin(c *gin.Context) {
 		u.NickName = req.NickName
 		repeat, err := u.IsNickNameRepeat()
 		if err != nil {
-			flog.Log.Errorf("UpdateUserAdmin err: %s", err.Error())
+			log.Errorf("UpdateUserAdmin err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if repeat {
-			flog.Log.Errorf("UpdateUserAdmin err: %s", "nickname already use by other")
+			log.Errorf("UpdateUserAdmin err: %s", "nickname already use by other")
 			resp.Error = Error(NickNameAlreadyBeUsed, "")
 			return
 		}
@@ -1130,14 +1125,14 @@ func UpdateUserAdmin(c *gin.Context) {
 	}
 	err = u.UpdateInfoMustVip()
 	if err != nil {
-		flog.Log.Errorf("UpdateUserAdmin err:%s", err.Error())
+		log.Errorf("UpdateUserAdmin err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
-	err = session.FafaSessionMgr.RefreshUser([]int64{u.Id}, SessionExpireTime)
+	err = session.Mgr.RefreshUser([]string{fmt.Sprintf("%d", u.Id)}, SessionExpireTime)
 	if err != nil {
-		flog.Log.Errorf("UpdateUserAdmin err:%s", err.Error())
+		log.Errorf("UpdateUserAdmin err:%s", err.Error())
 		resp.Error = Error(RefreshUserCacheError, err.Error())
 		return
 	}

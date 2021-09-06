@@ -147,7 +147,7 @@ var (
 	}
 )
 
-// home end
+// SetRouter home end
 func SetRouter(router *gin.Engine) {
 	for url, app := range HomeRouter {
 		for _, method := range app.Method {

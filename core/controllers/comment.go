@@ -3,9 +3,9 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/util"
+	log "github.com/hunterhug/golog"
 	"math"
 	"strings"
 )
@@ -33,14 +33,14 @@ func RealNameComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("RealNameComment err: %s", "comment_id empty")
+		log.Errorf("RealNameComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("RealNameComment err: %s", err.Error())
+		log.Errorf("RealNameComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -49,13 +49,13 @@ func RealNameComment(c *gin.Context) {
 	targetComment.Id = req.CommentId
 	ok, err := targetComment.Get()
 	if err != nil {
-		flog.Log.Errorf("RealNameComment err: %s", err.Error())
+		log.Errorf("RealNameComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || targetComment.IsDelete == 1 {
-		flog.Log.Errorf("RealNameComment err: %s", "comment not found")
+		log.Errorf("RealNameComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
@@ -66,14 +66,14 @@ func RealNameComment(c *gin.Context) {
 	}
 
 	if targetComment.UserId != uu.Id {
-		flog.Log.Errorf("RealNameComment err: %s", "comment not your's")
+		log.Errorf("RealNameComment err: %s", "comment not your's")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
 
 	_, err = targetComment.UpdateToShowName()
 	if err != nil {
-		flog.Log.Errorf("RealNameComment err: %s", err.Error())
+		log.Errorf("RealNameComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -102,27 +102,27 @@ func CreateComment(c *gin.Context) {
 
 	req.Body = strings.TrimSpace(req.Body)
 	if len(req.Body) == 0 {
-		flog.Log.Errorf("CreateComment err: %s", "body empty")
+		log.Errorf("CreateComment err: %s", "body empty")
 		resp.Error = Error(ParasError, "body empty")
 		return
 	}
 
 	req.Body = htmlEscaper.Replace(req.Body)
 	if !req.IsToComment && req.ContentId == 0 {
-		flog.Log.Errorf("CreateComment err: %s", "content_id empty")
+		log.Errorf("CreateComment err: %s", "content_id empty")
 		resp.Error = Error(ParasError, "content_id empty")
 		return
 	}
 
 	if req.IsToComment && req.CommentId == 0 {
-		flog.Log.Errorf("CreateComment err: %s", "comment_id empty")
+		log.Errorf("CreateComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("CreateComment err: %s", err.Error())
+		log.Errorf("CreateComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -133,20 +133,20 @@ func CreateComment(c *gin.Context) {
 		content.Id = req.ContentId
 		ok, err := content.GetByRaw()
 		if err != nil {
-			flog.Log.Errorf("CreateComment err: %s", err.Error())
+			log.Errorf("CreateComment err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("CreateComment err: %s", "content not found")
+			log.Errorf("CreateComment err: %s", "content not found")
 			resp.Error = Error(ContentNotFound, "")
 			return
 		}
 
 		if content.Status == 0 && content.Version > 0 {
 			if content.CloseComment == 1 {
-				flog.Log.Errorf("CreateComment err: %s", "content can not comment")
+				log.Errorf("CreateComment err: %s", "content can not comment")
 				resp.Error = Error(CommentClose, "")
 				return
 			}
@@ -164,7 +164,7 @@ func CreateComment(c *gin.Context) {
 			}
 			err = cm.InsertOne()
 			if err != nil {
-				flog.Log.Errorf("CreateComment err: %s", err.Error())
+				log.Errorf("CreateComment err: %s", err.Error())
 				resp.Error = Error(DBError, err.Error())
 				return
 			}
@@ -172,7 +172,7 @@ func CreateComment(c *gin.Context) {
 			go model.CommentForContent(uu.Id, content.UserId, content.Id, content.Title, cm.Id, cm.Describe, req.Anonymous)
 			resp.Data = cm.Id
 		} else {
-			flog.Log.Errorf("CreateComment err: %s", "content status not 0 or not publish")
+			log.Errorf("CreateComment err: %s", "content status not 0 or not publish")
 			if content.Status == 2 {
 				resp.Error = Error(ContentBanPermit, "")
 			} else {
@@ -189,19 +189,19 @@ func CreateComment(c *gin.Context) {
 	targetComment.Id = req.CommentId
 	ok, err := targetComment.Get()
 	if err != nil {
-		flog.Log.Errorf("CreateComment err: %s", err.Error())
+		log.Errorf("CreateComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || targetComment.IsDelete == 1 {
-		flog.Log.Errorf("CreateComment err: %s", "comment not found")
+		log.Errorf("CreateComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
 
 	if targetComment.Status == 1 {
-		flog.Log.Errorf("CreateComment err: %s", "comment ban")
+		log.Errorf("CreateComment err: %s", "comment ban")
 		resp.Error = Error(CommentBanPermit, "")
 		return
 	}
@@ -210,19 +210,19 @@ func CreateComment(c *gin.Context) {
 	content.Id = targetComment.ContentId
 	ok, err = content.GetByRaw()
 	if err != nil {
-		flog.Log.Errorf("CreateComment err: %s", err.Error())
+		log.Errorf("CreateComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("CreateComment err: %s", "content not found")
+		log.Errorf("CreateComment err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if content.Status != 0 || content.Version == 0 {
-		flog.Log.Errorf("CreateComment err: %s", "content status not 0 or not publish")
+		log.Errorf("CreateComment err: %s", "content status not 0 or not publish")
 		if content.Status == 2 {
 			resp.Error = Error(ContentBanPermit, "")
 		} else {
@@ -232,7 +232,7 @@ func CreateComment(c *gin.Context) {
 	}
 
 	if content.CloseComment == 1 {
-		flog.Log.Errorf("CreateComment err: %s", "content can not comment")
+		log.Errorf("CreateComment err: %s", "content can not comment")
 		resp.Error = Error(CommentClose, "")
 		return
 	}
@@ -266,7 +266,7 @@ func CreateComment(c *gin.Context) {
 
 	err = newComment.InsertOne()
 	if err != nil {
-		flog.Log.Errorf("CreateComment err: %s", err.Error())
+		log.Errorf("CreateComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -298,14 +298,14 @@ func DeleteComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("DeleteComment err: %s", "comment_id empty")
+		log.Errorf("DeleteComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("DeleteComment err: %s", err.Error())
+		log.Errorf("DeleteComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -315,20 +315,20 @@ func DeleteComment(c *gin.Context) {
 	comment.UserId = uu.Id
 	ok, err := comment.Get()
 	if err != nil {
-		flog.Log.Errorf("DeleteComment err: %s", err.Error())
+		log.Errorf("DeleteComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || comment.IsDelete == 1 {
-		flog.Log.Errorf("DeleteComment err: %s", "comment not found")
+		log.Errorf("DeleteComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
 
 	err = comment.Delete()
 	if err != nil {
-		flog.Log.Errorf("DeleteComment err: %s", err.Error())
+		log.Errorf("DeleteComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -353,14 +353,14 @@ func TakeComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("TakeComment err: %s", "comment_id empty")
+		log.Errorf("TakeComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("TakeComment err: %s", err.Error())
+		log.Errorf("TakeComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -369,14 +369,14 @@ func TakeComment(c *gin.Context) {
 	comment.Id = req.CommentId
 	ok, err := comment.Get()
 	if err != nil {
-		flog.Log.Errorf("TakeComment err: %s", err.Error())
+		log.Errorf("TakeComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	// if not found
 	if !ok || comment.IsDelete == 1 {
-		flog.Log.Errorf("TakeComment err: %s", "comment not found")
+		log.Errorf("TakeComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
@@ -392,14 +392,14 @@ func TakeComment(c *gin.Context) {
 
 	backContents, err := model.GetContentHelper([]int64{comment.ContentId}, false, uu.Id)
 	if err != nil {
-		flog.Log.Errorf("TakeComment err: %s", err.Error())
+		log.Errorf("TakeComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	backComments, backUsers, err := model.GetCommentAndCommentUser(commentIds, false, nil, uu.Id)
 	if err != nil {
-		flog.Log.Errorf("TakeComment err: %s", err.Error())
+		log.Errorf("TakeComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -462,7 +462,7 @@ func ListComment(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListComment err: %s", err.Error())
+		log.Errorf("ListComment err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -546,33 +546,19 @@ func ListComment(c *gin.Context) {
 		session.And("create_time<?", req.CreateTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListComment err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	// if count>0 start list
 	cs := make([]model.Comment, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.CommentSortName)
-		// do query
-		err = session.Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListComment err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.CommentSortName)
+
+	// do query
+	total, err := session.FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListComment err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	commentIds := make(map[int64]struct{})
@@ -590,14 +576,14 @@ func ListComment(c *gin.Context) {
 	}
 	backContents, err := model.GetContentHelper(util.MapToArray(contentIds), true, 0)
 	if err != nil {
-		flog.Log.Errorf("ListComment err: %s", err.Error())
+		log.Errorf("ListComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	backComments, backUsers, err := model.GetCommentAndCommentUser(util.MapToArray(commentIds), true, nil, 0)
 	if err != nil {
-		flog.Log.Errorf("ListComment err: %s", err.Error())
+		log.Errorf("ListComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -638,7 +624,7 @@ func ListHomeComment(c *gin.Context) {
 	}
 
 	if req.ContentId == 0 {
-		flog.Log.Errorf("ListHomeComment err: %s", "content_id empty")
+		log.Errorf("ListHomeComment err: %s", "content_id empty")
 		resp.Error = Error(ParasError, "content_id empty")
 		return
 	}
@@ -666,46 +652,31 @@ func ListHomeComment(c *gin.Context) {
 
 	backContents, err := model.GetContentHelper([]int64{req.ContentId}, false, yourUserId)
 	if err != nil {
-		flog.Log.Errorf("ListHomeComment err: %s", err.Error())
+		log.Errorf("ListHomeComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if len(backContents) == 0 {
-		flog.Log.Errorf("ListHomeComment err: %s", "content not found")
+		log.Errorf("ListHomeComment err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	session.And("is_delete=?", 0)
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListHomeComment err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	cs := make([]model.Comment, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.CommentHomeSortName)
-		// do query
-		err = session.Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListHomeComment err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.CommentHomeSortName)
+
+	// do query
+	total, err := session.FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListHomeComment err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	commentIds := make(map[int64]struct{})
@@ -729,29 +700,19 @@ func ListHomeComment(c *gin.Context) {
 		for k, c := range cs {
 			innerSession := model.FaFaRdb.Client.NewSession()
 			innerSession.Where("root_comment_id=?", c.Id).And("is_delete=?", 0)
-			selectSession := innerSession.Clone()
-			num, err := innerSession.Count(new(model.Comment))
+			Build(innerSession, req.Sort, model.CommentHomeSortName)
+
+			innerCs := make([]model.Comment, 0)
+			num, err := innerSession.Limit(3).FindAndCount(&innerCs)
 			if err != nil {
-				flog.Log.Errorf("ListHomeComment err: %s", err.Error())
+				log.Errorf("ListHomeComment err: %s", err.Error())
 				resp.Error = Error(DBError, err.Error())
 				innerSession.Close()
-				selectSession.Close()
 				return
 			}
 
 			if num > 0 {
-				innerCs := make([]model.Comment, 0)
 				cs[k].SonNum = num
-				Build(selectSession, req.Sort, model.CommentHomeSortName)
-				err = selectSession.Limit(3).Find(&innerCs)
-				if err != nil {
-					flog.Log.Errorf("ListHomeComment err: %s", err.Error())
-					resp.Error = Error(DBError, err.Error())
-					innerSession.Close()
-					selectSession.Close()
-					return
-				}
-
 				cs[k].Son = innerCs
 				for _, vv := range innerCs {
 					commentIds[vv.Id] = struct{}{}
@@ -762,12 +723,11 @@ func ListHomeComment(c *gin.Context) {
 			}
 
 			innerSession.Close()
-			selectSession.Close()
 		}
 	}
 	backComments, backUsers, err := model.GetCommentAndCommentUser(util.MapToArray(commentIds), false, nil, yourUserId)
 	if err != nil {
-		flog.Log.Errorf("ListHomeComment err: %s", err.Error())
+		log.Errorf("ListHomeComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -803,14 +763,14 @@ func CoolComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("CoolComment err: %s", "comment_id empty")
+		log.Errorf("CoolComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("CoolComment err: %s", err.Error())
+		log.Errorf("CoolComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -819,19 +779,19 @@ func CoolComment(c *gin.Context) {
 	comment.Id = req.CommentId
 	ok, err := comment.Get()
 	if err != nil {
-		flog.Log.Errorf("CoolComment err: %s", err.Error())
+		log.Errorf("CoolComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || comment.IsDelete == 1 {
-		flog.Log.Errorf("CoolComment err: %s", "comment not found")
+		log.Errorf("CoolComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
 
 	if comment.Status == 1 {
-		flog.Log.Errorf("CoolComment err: %s", "comment ban")
+		log.Errorf("CoolComment err: %s", "comment ban")
 		resp.Error = Error(CommentBanPermit, "")
 		return
 	}
@@ -841,7 +801,7 @@ func CoolComment(c *gin.Context) {
 	cool.UserId = uu.Id
 	ok, err = cool.Exist()
 	if err != nil {
-		flog.Log.Errorf("CoolComment err: %s", err.Error())
+		log.Errorf("CoolComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -851,14 +811,14 @@ func CoolComment(c *gin.Context) {
 	if ok {
 		err = cool.Delete()
 		if err != nil {
-			flog.Log.Errorf("CoolContent err: %s", err.Error())
+			log.Errorf("CoolContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 	} else {
 		err = cool.Create()
 		if err != nil {
-			flog.Log.Errorf("CoolContent err: %s", err.Error())
+			log.Errorf("CoolContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		} else {
@@ -892,14 +852,14 @@ func BadComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("BadComment err: %s", "comment_id empty")
+		log.Errorf("BadComment err: %s", "comment_id empty")
 		resp.Error = Error(ParasError, "comment_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("BadComment err: %s", err.Error())
+		log.Errorf("BadComment err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -908,19 +868,19 @@ func BadComment(c *gin.Context) {
 	comment.Id = req.CommentId
 	ok, err := comment.Get()
 	if err != nil {
-		flog.Log.Errorf("BadComment err: %s", err.Error())
+		log.Errorf("BadComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || comment.IsDelete == 1 {
-		flog.Log.Errorf("BadComment err: %s", "comment not found")
+		log.Errorf("BadComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
 
 	if comment.Status == 1 {
-		flog.Log.Errorf("BadComment err: %s", "comment ban")
+		log.Errorf("BadComment err: %s", "comment ban")
 		resp.Error = Error(CommentBanPermit, "")
 		return
 	}
@@ -930,7 +890,7 @@ func BadComment(c *gin.Context) {
 	bad.UserId = uu.Id
 	ok, err = bad.Exist()
 	if err != nil {
-		flog.Log.Errorf("BadComment err: %s", err.Error())
+		log.Errorf("BadComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -943,7 +903,7 @@ func BadComment(c *gin.Context) {
 	}
 
 	if err != nil {
-		flog.Log.Errorf("BadComment err: %s", err.Error())
+		log.Errorf("BadComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 	}
 
@@ -962,7 +922,7 @@ func BadComment(c *gin.Context) {
 		if AutoBan {
 			err = cc.Ban(BadTime)
 			if err != nil {
-				flog.Log.Errorf("BadComment ban err: %s", err.Error())
+				log.Errorf("BadComment ban err: %s", err.Error())
 			}
 		}
 		resp.Data = "+"
@@ -988,13 +948,13 @@ func UpdateComment(c *gin.Context) {
 	}
 
 	if req.CommentId == 0 {
-		flog.Log.Errorf("UpdateComment err: %s", "id empty")
+		log.Errorf("UpdateComment err: %s", "id empty")
 		resp.Error = Error(ParasError, "id empty")
 		return
 	}
 
 	if req.Status != 0 && req.Status != 1 {
-		flog.Log.Errorf("UpdateComment err: %s", "status should be 0 or 1")
+		log.Errorf("UpdateComment err: %s", "status should be 0 or 1")
 		resp.Error = Error(ParasError, "status should be 0 or 1")
 		return
 	}
@@ -1002,13 +962,13 @@ func UpdateComment(c *gin.Context) {
 	comment.Id = req.CommentId
 	ok, err := comment.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateComment err: %s", err.Error())
+		log.Errorf("UpdateComment err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok || comment.IsDelete == 1 {
-		flog.Log.Errorf("UpdateComment err: %s", "comment not found")
+		log.Errorf("UpdateComment err: %s", "comment not found")
 		resp.Error = Error(CommentNotFound, "")
 		return
 	}
@@ -1018,7 +978,7 @@ func UpdateComment(c *gin.Context) {
 		comment.Status = req.Status
 		_, err := comment.UpdateStatus()
 		if err != nil {
-			flog.Log.Errorf("UpdateComment err: %s", err.Error())
+			log.Errorf("UpdateComment err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 		}
 

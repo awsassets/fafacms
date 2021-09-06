@@ -13,6 +13,8 @@
 此项目代号为 `fafacms`。花花拼音 `fafa`，名称来源于广东话发发，花花的谐音，听起来有诙谐，娱乐等感觉，是一个使用 `Golang` 开发的前后端分离 --> 内容管理系统(CMS)。
 目前基本的后端API以及配套文档都已经完成，大家可以从这个项目中学会 `Golang` 相关的开发技能，包括数据库操作，图片存储，邮件发送，容器部署等知识，五脏俱全的典型企业级应用，配置对象存储后可分布式多副本部署。
 
+接口文档见： [https://fafacms.lenggirl.com](https://fafacms.lenggirl.com)  。
+
 ## 产品概述
 
 1. 用户注册，填入相应信息如QQ，微博，邮箱，自我介绍，头像等，然后收到注册邮件，点击进行激活。未激活用户登陆后会显示未激活，无法使用平台。激活后用户可以登录后台，可以进行评论。用户注册后不提供注销功能。用户如果违禁被拉进黑名单不允许任何操作。用户发布内容和创建节点需要联系管理员赋予VIP权限。总结：未激活用户，普通用户，VIP用户，管理员，只有VIP用户可以创建内容，管理员可以操纵特殊权限路由。
@@ -58,7 +60,7 @@ sudo ./install.sh
 
 ## 写给后端人员
 
-关心部署细节，见 [给后端开发详细的部署说明](/install/README.md)，强烈建议阅读。
+关心部署细节，见 [给后端开发详细的部署说明](install/README.md)，强烈建议阅读。
 
 微信支持:
 
@@ -68,8 +70,20 @@ sudo ./install.sh
 
 ![](./docs/support/alipay.png)
 
-## CopyRight
+# License
 
-正在努力开发中的客户端界面UI: 💐 [APP/WEB](https://github.com/hunterhug/fafafront) 💐。
+```
+Copyright [2019-2021] [github.com/hunterhug]
 
-All right reserved. Attribution-NonCommercial-NoDerivatives 4.0 International.You can use it for education only but can't make profits for any companies and individuals!
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```

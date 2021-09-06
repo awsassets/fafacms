@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
 	"github.com/hunterhug/fafacms/core/config"
-	. "github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	myutil "github.com/hunterhug/fafacms/core/util"
 	"github.com/hunterhug/fafacms/core/util/oss"
 	"github.com/hunterhug/go_image"
+	log "github.com/hunterhug/golog"
 	"io/ioutil"
 	"math"
 	"path/filepath"
@@ -63,7 +63,7 @@ func UploadFile(c *gin.Context) {
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		Log.Errorf("upload err: %s", err.Error())
+		log.Errorf("upload err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -85,27 +85,27 @@ func UploadFile(c *gin.Context) {
 	// Read binary file
 	h, err := c.FormFile("file")
 	if err != nil {
-		Log.Errorf("upload err:%s", err.Error())
+		log.Errorf("upload err:%s", err.Error())
 		resp.Error = Error(UploadFileError, err.Error())
 		return
 	}
 
 	fileAllowArray, ok := FileAllow[fileType]
 	if !ok {
-		Log.Errorf("upload err: type not permit")
+		log.Errorf("upload err: type not permit")
 		resp.Error = Error(UploadFileTypeNotPermit, "")
 		return
 	}
 
 	fileSuffix := myutil.GetFileSuffix(h.Filename)
 	if !myutil.InArray(fileAllowArray, fileSuffix) {
-		Log.Errorf("upload err: file suffix: %s not permit", fileSuffix)
+		log.Errorf("upload err: file suffix: %s not permit", fileSuffix)
 		resp.Error = Error(UploadFileTypeNotPermit, fmt.Sprintf("file suffix: %s not permit", fileSuffix))
 		return
 	}
 
 	if h.Size > int64(FileBytes) {
-		Log.Errorf("upload err: file size too big: %d", h.Size)
+		log.Errorf("upload err: file size too big: %d", h.Size)
 		resp.Error = Error(UploadFileTooMaxLimit, fmt.Sprintf(" file size too big: %d", h.Size))
 		return
 	}
@@ -113,7 +113,7 @@ func UploadFile(c *gin.Context) {
 	// Open file
 	f, err := h.Open()
 	if err != nil {
-		Log.Errorf("upload err:%s", err.Error())
+		log.Errorf("upload err:%s", err.Error())
 		resp.Error = Error(UploadFileError, err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func UploadFile(c *gin.Context) {
 	// Read binary
 	raw, err := ioutil.ReadAll(f)
 	if err != nil {
-		Log.Errorf("upload err:%s", err.Error())
+		log.Errorf("upload err:%s", err.Error())
 		resp.Error = Error(UploadFileError, err.Error())
 		return
 	}
@@ -131,7 +131,7 @@ func UploadFile(c *gin.Context) {
 	// When raw bytes empty will occur err
 	fileSize := len(raw)
 	if fileSize == 0 {
-		Log.Errorf("upload err:%s", "file empty")
+		log.Errorf("upload err:%s", "file empty")
 		resp.Error = Error(UploadFileError, "file empty")
 		return
 	}
@@ -139,7 +139,7 @@ func UploadFile(c *gin.Context) {
 	// HashCode the raw bytes
 	fileHashCode, err := myutil.Sha256(raw)
 	if err != nil {
-		Log.Errorf("upload err:%s", err.Error())
+		log.Errorf("upload err:%s", err.Error())
 		resp.Error = Error(UploadFileError, err.Error())
 		return
 	}
@@ -168,14 +168,14 @@ func UploadFile(c *gin.Context) {
 			// disk mode first make dir
 			err := myutil.MakeDir(fileDir)
 			if err != nil {
-				Log.Errorf("upload err:%s", err.Error())
+				log.Errorf("upload err:%s", err.Error())
 				resp.Error = Error(UploadFileError, err.Error())
 				return
 			}
 
 			err = myutil.SaveToFile(fileAbName, raw)
 			if err != nil {
-				Log.Errorf("upload err:%s", err.Error())
+				log.Errorf("upload err:%s", err.Error())
 				resp.Error = Error(UploadFileError, err.Error())
 				return
 			}
@@ -187,7 +187,7 @@ func UploadFile(c *gin.Context) {
 			p.Url = fmt.Sprintf("%s.%s/%s/%s", config.FaFaConfig.OssConfig.BucketName, config.FaFaConfig.OssConfig.Endpoint, helpPath, fileName)
 			err = oss.SaveFile(config.FaFaConfig.OssConfig, helpPath+"/"+fileName, raw)
 			if err != nil {
-				Log.Errorf("upload err:%s", err.Error())
+				log.Errorf("upload err:%s", err.Error())
 				resp.Error = Error(UploadFileError, err.Error())
 				return
 			}
@@ -208,13 +208,13 @@ func UploadFile(c *gin.Context) {
 					// scale cut cut
 					err = myutil.MakeDir(fileScaleDir)
 					if err != nil {
-						Log.Errorf("upload err:%s", err.Error())
+						log.Errorf("upload err:%s", err.Error())
 						resp.Error = Error(UploadFileError, err.Error())
 						return
 					}
 					err := go_image.ScaleF2F(fileAbName, fileScaleAbName, ScaleWidth)
 					if err != nil {
-						Log.Errorf("upload err:%s", err.Error())
+						log.Errorf("upload err:%s", err.Error())
 						resp.Error = Error(UploadFileError, err.Error())
 						return
 					}
@@ -222,14 +222,14 @@ func UploadFile(c *gin.Context) {
 					// OSS again
 					outRaw, err := go_image.ScaleB2B(raw, ScaleWidth)
 					if err != nil {
-						Log.Errorf("upload err:%s", err.Error())
+						log.Errorf("upload err:%s", err.Error())
 						resp.Error = Error(UploadFileError, err.Error())
 						return
 					}
 
 					err = oss.SaveFile(config.FaFaConfig.OssConfig, strings.Replace(helpPath, "storage/", "storage_x/", -1)+"/"+fileName, outRaw)
 					if err != nil {
-						Log.Errorf("upload err:%s", err.Error())
+						log.Errorf("upload err:%s", err.Error())
 						resp.Error = Error(UploadFileError, err.Error())
 						return
 					}
@@ -248,7 +248,7 @@ func UploadFile(c *gin.Context) {
 		p.Size = int64(fileSize)
 		_, err = model.FaFaRdb.InsertOne(p)
 		if err != nil {
-			Log.Errorf("upload err:%s", err.Error())
+			log.Errorf("upload err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -320,7 +320,7 @@ func ListFileAdminHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		Log.Errorf("ListFileAdmin err: %s", err.Error())
+		log.Errorf("ListFileAdmin err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -336,6 +336,7 @@ func ListFileAdminHelper(c *gin.Context, userId int64) {
 	if req.Id != 0 {
 		session.And("id=?", req.Id)
 	}
+
 	if req.HashCode != "" {
 		session.And("hash_code=?", req.HashCode)
 	}
@@ -398,33 +399,18 @@ func ListFileAdminHelper(c *gin.Context, userId int64) {
 		session.And("size<?", req.SizeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		Log.Errorf("ListFileAdmin err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	files := make([]model.File, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.FileSortName)
-		// do query
-		err = session.Find(&files)
-		if err != nil {
-			Log.Errorf("ListFileAdmin err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.FileSortName)
+
+	// do query
+	total, err := session.FindAndCount(&files)
+	if err != nil {
+		log.Errorf("ListFileAdmin err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -446,7 +432,7 @@ func ListFile(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		Log.Errorf("ListFile err: %s", err.Error())
+		log.Errorf("ListFile err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -478,7 +464,7 @@ func UpdateFileAdminHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		Log.Errorf("UpdateFileAdmin err: %s", err.Error())
+		log.Errorf("UpdateFileAdmin err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -494,7 +480,7 @@ func UpdateFileAdminHelper(c *gin.Context, userId int64) {
 	// can set the file hide but it is pretend hide still exist
 	ok, err := f.Update(req.Hide)
 	if err != nil {
-		Log.Errorf("UpdateFileAdmin err:%s", err.Error())
+		log.Errorf("UpdateFileAdmin err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -513,7 +499,7 @@ func UpdateFile(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		Log.Errorf("UpdateFile err: %s", err.Error())
+		log.Errorf("UpdateFile err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return

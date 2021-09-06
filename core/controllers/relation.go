@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/util"
+	log "github.com/hunterhug/golog"
 	"math"
 )
 
@@ -26,7 +26,7 @@ func AddRelation(c *gin.Context) {
 	}
 
 	if req.UserId == 0 && req.UserName == "" {
-		flog.Log.Errorf("RelationAdd err: %s", "user info empty")
+		log.Errorf("RelationAdd err: %s", "user info empty")
 		resp.Error = Error(ParasError, "user info empty")
 		return
 	}
@@ -36,20 +36,20 @@ func AddRelation(c *gin.Context) {
 	who.Name = req.UserName
 	ok, err := who.GetActivateRaw()
 	if err != nil {
-		flog.Log.Errorf("RelationAdd err: %s", err.Error())
+		log.Errorf("RelationAdd err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("RelationAdd err: %s", "user not fund")
+		log.Errorf("RelationAdd err: %s", "user not fund")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("RelationAdd err: %s", err.Error())
+		log.Errorf("RelationAdd err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -61,7 +61,7 @@ func AddRelation(c *gin.Context) {
 	r.UserBName = who.Name
 	err = r.Add()
 	if err != nil {
-		flog.Log.Errorf("RelationAdd err: %s", err.Error())
+		log.Errorf("RelationAdd err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -87,7 +87,7 @@ func MinuteRelation(c *gin.Context) {
 	}
 
 	if req.UserId == 0 && req.UserName == "" {
-		flog.Log.Errorf("RelationMinute err: %s", "user info empty")
+		log.Errorf("RelationMinute err: %s", "user info empty")
 		resp.Error = Error(ParasError, "user info empty")
 		return
 	}
@@ -97,20 +97,20 @@ func MinuteRelation(c *gin.Context) {
 	who.Name = req.UserName
 	ok, err := who.GetActivateRaw()
 	if err != nil {
-		flog.Log.Errorf("RelationMinute err: %s", err.Error())
+		log.Errorf("RelationMinute err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("RelationMinute err: %s", "user not fund")
+		log.Errorf("RelationMinute err: %s", "user not fund")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("RelationMinute err: %s", err.Error())
+		log.Errorf("RelationMinute err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -120,7 +120,7 @@ func MinuteRelation(c *gin.Context) {
 	r.UserBId = who.Id
 	err = r.Minute()
 	if err != nil {
-		flog.Log.Errorf("RelationMinute err: %s", err.Error())
+		log.Errorf("RelationMinute err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -150,7 +150,7 @@ func ListFollowedRelationOfMe(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListFollowedRelationOfMe err: %s", err.Error())
+		log.Errorf("ListFollowedRelationOfMe err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -165,7 +165,7 @@ func ListFollowingRelationOfMe(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListFollowingRelationOfMe err: %s", err.Error())
+		log.Errorf("ListFollowingRelationOfMe err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -180,7 +180,7 @@ func ListFollowedRelation(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListFollowedRelation err: %s", err.Error())
+		log.Errorf("ListFollowedRelation err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -195,7 +195,7 @@ func ListFollowingRelation(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListFollowingRelation err: %s", err.Error())
+		log.Errorf("ListFollowingRelation err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -232,7 +232,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 	if userAId == -1 {
 		// A follow who, so A should not empty
 		if req.UserAId == 0 && req.UserAName == "" {
-			flog.Log.Errorf("ListRelation err: %s", "user A info empty")
+			log.Errorf("ListRelation err: %s", "user A info empty")
 			resp.Error = Error(ParasError, "user A info empty")
 			return
 		}
@@ -241,7 +241,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 	// who follow B, so B should not empty
 	if userBId == -1 {
 		if req.UserBId == 0 && req.UserBName == "" {
-			flog.Log.Errorf("ListRelation err: %s", "user B info empty")
+			log.Errorf("ListRelation err: %s", "user B info empty")
 			resp.Error = Error(ParasError, "user B info empty")
 			return
 		}
@@ -283,33 +283,18 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 		session.And("create_time<?", req.CreateTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListRelation err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	cs := make([]model.Relation, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.RelationSortName)
-		// do query
-		err = session.Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListRelation err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.RelationSortName)
+
+	// do query
+	total, err := session.FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListRelation err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// search the user info
@@ -331,7 +316,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 				num, err := temp.Count()
 
 				if err != nil {
-					flog.Log.Errorf("ListRelation err:%s", err.Error())
+					log.Errorf("ListRelation err:%s", err.Error())
 					resp.Error = Error(DBError, err.Error())
 					return
 				}
@@ -348,7 +333,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 				temp1.UserBId = me
 				num, err = temp.Count()
 				if err != nil {
-					flog.Log.Errorf("ListRelation err:%s", err.Error())
+					log.Errorf("ListRelation err:%s", err.Error())
 					resp.Error = Error(DBError, err.Error())
 					return
 				}
@@ -374,7 +359,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 				userIds[v.UserAId] = struct{}{}
 				num, err := temp.Count()
 				if err != nil {
-					flog.Log.Errorf("ListRelation err:%s", err.Error())
+					log.Errorf("ListRelation err:%s", err.Error())
 					resp.Error = Error(DBError, err.Error())
 					return
 				}
@@ -391,7 +376,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 				temp1.UserBId = me
 				num, err = temp.Count()
 				if err != nil {
-					flog.Log.Errorf("ListRelation err:%s", err.Error())
+					log.Errorf("ListRelation err:%s", err.Error())
 					resp.Error = Error(DBError, err.Error())
 					return
 				}
@@ -415,7 +400,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 			userIds[v.UserAId] = struct{}{}
 			num, err := temp.Count()
 			if err != nil {
-				flog.Log.Errorf("ListRelation err:%s", err.Error())
+				log.Errorf("ListRelation err:%s", err.Error())
 				resp.Error = Error(DBError, err.Error())
 				return
 			}
@@ -428,7 +413,7 @@ func ListRelation(c *gin.Context, userAId int64, userBId int64, me int64) {
 
 	users, err := model.GetUser(util.MapToArray(userIds))
 	if err != nil {
-		flog.Log.Errorf("ListRelation err:%s", err.Error())
+		log.Errorf("ListRelation err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}

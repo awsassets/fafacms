@@ -2,30 +2,30 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/session"
+	log "github.com/hunterhug/golog"
 )
 
-// every API which need auth should take a HTTP header `Auth`
+// AuthHeader every API which need auth should take a HTTP header `Auth`
 const AuthHeader = "Auth"
 
+const innerContextAuthCacheKey = "everAuth"
+
 var (
-	// if you want skip auth you can set it true
+	// AuthDebug if you want skip auth you can set it true
 	AuthDebug = false
 
-	// those api will be check resource
+	// AdminUrl those api will be checked resource
 	AdminUrl map[string]int64
 
-	// can only single login, one token gen will destroy other tokens
-	SingleLogin bool
-
-	// redis key expire time
+	// SessionExpireTime redis key expire time
 	SessionExpireTime int64 = 24 * 3600 * 7
 )
 
-// api access auth filter
+// AuthFilter api access auth filter
 var AuthFilter = func(c *gin.Context) {
 	resp := new(Resp)
 	defer func() {
@@ -38,7 +38,7 @@ var AuthFilter = func(c *gin.Context) {
 	// get session
 	nowUser, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("filter err:%s", err.Error())
+		log.Errorf("filter err:%s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -63,29 +63,20 @@ var AuthFilter = func(c *gin.Context) {
 
 	// not active will be refuse
 	if nowUser.Status == 0 {
-		flog.Log.Errorf("filter err: not active")
+		log.Errorf("filter err: not active")
 		resp.Error = Error(UserNotActivate, "not active")
 		return
 	}
 
 	// black user will be refuse
 	if nowUser.Status == 2 {
-		flog.Log.Errorf("filter err: black lock, contact admin")
+		log.Errorf("filter err: black lock, contact admin")
 		resp.Error = Error(UserIsInBlack, "black lock, contact admin")
 		return
 	}
 
-	// resource is exist
-	//r := new(model.Resource)
+	// resource is existed
 	url := c.Request.URL.Path
-	//r.Url, _ = util2.Sha256([]byte(url))
-	//r.Admin = true
-	//
-	//// resource not found can skip auth
-	//if err := r.Get(); err != nil {
-	//	flog.Log.Debugf("resource found url:%s, auth err:%s", url, err.Error())
-	//	return
-	//}
 
 	// resource not found can skip auth
 	resourceId, exist := AdminUrl[url]
@@ -99,64 +90,74 @@ var AuthFilter = func(c *gin.Context) {
 	gr.ResourceId = resourceId
 	exist, err = model.FaFaRdb.Client.Exist(gr)
 	if err != nil {
-		flog.Log.Errorf("filter err:%s", err.Error())
+		log.Errorf("filter err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	// resource not found in group will be refuse
 	if !exist {
-		flog.Log.Errorf("filter err:%s", "resource not allow")
+		log.Errorf("filter err:%s", "resource not allow")
 		resp.Error = Error(UserAuthPermit, "resource not allow")
 		return
 	}
 }
 
-// get the info of user，will save in redis Session
+// GetUserSession get the info of user，will save in redis Session
 func GetUserSession(c *gin.Context) (*model.User, error) {
 	// get the info from context if exist
-	if v, exist := c.Get("everAuth"); exist {
+	if v, exist := c.Get(innerContextAuthCacheKey); exist {
 		return v.(*model.User), nil
 	}
 
-	// get token from HTTP header and check if it is exist
+	// get token from HTTP header and check if it is existed
 	token := c.GetHeader(AuthHeader)
-	user, err := session.FafaSessionMgr.CheckAndSetToken(token, SessionExpireTime)
+	user, exist, err := session.Mgr.CheckTokenOrUpdateUser(token, SessionExpireTime)
 	if err != nil {
 		return nil, err
 	}
 
+	if !exist {
+		return nil, errors.New("user not found")
+	}
+
+	if user.Detail == nil {
+		return nil, errors.New("user not found in cache")
+	}
+
+	u := user.Detail.(*model.User)
+
 	// set the info into context
-	c.Set("everAuth", user)
-	return user, nil
+	c.Set(innerContextAuthCacheKey, u)
+	return u, nil
 }
 
-func SetUserSession(user *model.User) (string, error) {
-	if user == nil {
+func SetUserSession(id int64) (string, error) {
+	if id == 0 {
 		return "", errors.New("user nil")
 	}
 
-	// single login
-	// we only allow one token exist, other token will be delete.
-	if SingleLogin {
-		session.FafaSessionMgr.DeleteUserToken(user.Id)
+	idS := fmt.Sprintf("%d", id)
+	err := session.Mgr.RefreshUser([]string{idS}, SessionExpireTime)
+	if err != nil {
+		return "", err
 	}
-	return session.FafaSessionMgr.SetToken(user, SessionExpireTime)
+	return session.Mgr.SetToken(idS, SessionExpireTime)
 }
 
 func DeleteUserSession(c *gin.Context) error {
 	token := c.GetHeader(AuthHeader)
-	err := session.FafaSessionMgr.DeleteToken(token)
+	err := session.Mgr.DeleteToken(token)
 	return err
 }
 
 func DeleteUserAllSession(id int64) error {
-	err := session.FafaSessionMgr.DeleteUserToken(id)
+	err := session.Mgr.DeleteUserToken(fmt.Sprintf("%d", id))
 	return err
 }
 
 func RefreshUserSession(c *gin.Context) error {
 	token := c.GetHeader(AuthHeader)
-	err := session.FafaSessionMgr.RefreshToken(token, SessionExpireTime)
+	err := session.Mgr.RefreshToken(token, SessionExpireTime)
 	return err
 }

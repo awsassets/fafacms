@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
+	log "github.com/hunterhug/golog"
 	"math"
 )
 
@@ -35,26 +35,26 @@ func CreateContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("CreateContent err: %s", err.Error())
+		log.Errorf("CreateContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if len(req.Describe) == 0 {
-		flog.Log.Errorf("CreateContent err: %s", "describe empty")
+		log.Errorf("CreateContent err: %s", "describe empty")
 		resp.Error = Error(ParasError, "describe empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("CreateContent err: %s", err.Error())
+		log.Errorf("CreateContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 
 	if uu.Vip == 0 {
-		flog.Log.Errorf("CreateContent err: %s", "not vip")
+		log.Errorf("CreateContent err: %s", "not vip")
 		resp.Error = Error(VipError, "")
 		return
 	}
@@ -65,12 +65,12 @@ func CreateContent(c *gin.Context) {
 		content.Seo = req.Seo
 		exist, err := content.CheckSeoValid()
 		if err != nil {
-			flog.Log.Errorf("CreateContent err: %s", err.Error())
+			log.Errorf("CreateContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if exist {
-			flog.Log.Errorf("CreateContent err: %s", "seo repeat")
+			log.Errorf("CreateContent err: %s", "seo repeat")
 			resp.Error = Error(ContentSeoAlreadyBeUsed, "")
 			return
 		}
@@ -80,7 +80,7 @@ func CreateContent(c *gin.Context) {
 	}
 
 	if req.NodeId == 0 {
-		flog.Log.Errorf("CreateContent err: %s", "node_id can not empty")
+		log.Errorf("CreateContent err: %s", "node_id can not empty")
 		resp.Error = Error(ParasError, "node_id can not empty")
 		return
 	}
@@ -91,13 +91,13 @@ func CreateContent(c *gin.Context) {
 	contentNode.UserId = uu.Id
 	exist, err := contentNode.Get()
 	if err != nil {
-		flog.Log.Errorf("CreateContent err: %s", err.Error())
+		log.Errorf("CreateContent err: %s", err.Error())
 		resp.Error = Error(DBError, "")
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("CreateContent err: %s", "node not found")
+		log.Errorf("CreateContent err: %s", "node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -110,13 +110,13 @@ func CreateContent(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("CreateContent err:%s", err.Error())
+			log.Errorf("CreateContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("CreateContent err: image not exist")
+			log.Errorf("CreateContent err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "")
 			return
 		}
@@ -132,7 +132,7 @@ func CreateContent(c *gin.Context) {
 	content.SortNum, _ = content.CountNumUnderNode()
 	_, err = content.Insert()
 	if err != nil {
-		flog.Log.Errorf("CreateContent err:%s", err.Error())
+		log.Errorf("CreateContent err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -162,14 +162,14 @@ func UpdateSeoOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfContent err: %s", err.Error())
+		log.Errorf("UpdateSeoOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfContent err: %s", err.Error())
+		log.Errorf("UpdateSeoOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -179,13 +179,13 @@ func UpdateSeoOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfContent err: %s", err.Error())
+		log.Errorf("UpdateSeoOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateSeoOfContent err: %s", "content not found")
+		log.Errorf("UpdateSeoOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -197,19 +197,19 @@ func UpdateSeoOfContent(c *gin.Context) {
 		content.Seo = req.Seo
 		exist, err := content.CheckSeoValid()
 		if err != nil {
-			flog.Log.Errorf("UpdateSeoOfContent err: %s", err.Error())
+			log.Errorf("UpdateSeoOfContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if exist {
-			flog.Log.Errorf("UpdateSeoOfContent err: %s", "seo repeat")
+			log.Errorf("UpdateSeoOfContent err: %s", "seo repeat")
 			resp.Error = Error(ContentSeoAlreadyBeUsed, "")
 			return
 		}
 
 		_, err = content.UpdateSeo()
 		if err != nil {
-			flog.Log.Errorf("UpdateSeoOfContent err:%s", err.Error())
+			log.Errorf("UpdateSeoOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -238,14 +238,14 @@ func UpdateImageOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateImageOfContent err: %s", err.Error())
+		log.Errorf("UpdateImageOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateImageOfContent err: %s", err.Error())
+		log.Errorf("UpdateImageOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -255,13 +255,13 @@ func UpdateImageOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateImageOfContent err: %s", err.Error())
+		log.Errorf("UpdateImageOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateImageOfContent err: %s", "content not found")
+		log.Errorf("UpdateImageOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -274,13 +274,13 @@ func UpdateImageOfContent(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("UpdateImageOfContent err:%s", err.Error())
+			log.Errorf("UpdateImageOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("UpdateImageOfContent err: image not exist")
+			log.Errorf("UpdateImageOfContent err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "")
 			return
 		}
@@ -288,7 +288,7 @@ func UpdateImageOfContent(c *gin.Context) {
 		content.ImagePath = req.ImagePath
 		_, err = content.UpdateImage()
 		if err != nil {
-			flog.Log.Errorf("UpdateImageOfContent err:%s", err.Error())
+			log.Errorf("UpdateImageOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -317,7 +317,7 @@ func UpdateStatusOfContentAdmin(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfContentAdmin err: %s", err.Error())
+		log.Errorf("UpdateStatusOfContentAdmin err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -326,13 +326,13 @@ func UpdateStatusOfContentAdmin(c *gin.Context) {
 	contentBefore.Id = req.Id
 	exist, err := contentBefore.GetByRaw()
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfContentAdmin err: %s", err.Error())
+		log.Errorf("UpdateStatusOfContentAdmin err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateStatusOfContentAdmin err: %s", "content not found")
+		log.Errorf("UpdateStatusOfContentAdmin err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -345,7 +345,7 @@ func UpdateStatusOfContentAdmin(c *gin.Context) {
 		content.Title = contentBefore.Title
 		_, err = content.UpdateStatus(false, contentBefore.Status == 2)
 		if err != nil {
-			flog.Log.Errorf("UpdateStatusOfContentAdmin err:%s", err.Error())
+			log.Errorf("UpdateStatusOfContentAdmin err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -379,14 +379,14 @@ func UpdateStatusOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", err.Error())
+		log.Errorf("UpdateStatusOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", err.Error())
+		log.Errorf("UpdateStatusOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -396,25 +396,25 @@ func UpdateStatusOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", err.Error())
+		log.Errorf("UpdateStatusOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", "content not found")
+		log.Errorf("UpdateStatusOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if contentBefore.Status == 2 {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", "content ban")
+		log.Errorf("UpdateStatusOfContent err: %s", "content ban")
 		resp.Error = Error(ContentBanPermit, "")
 		return
 	}
 
 	if contentBefore.Status == 3 {
-		flog.Log.Errorf("UpdateStatusOfContent err: %s", "content rubbish")
+		log.Errorf("UpdateStatusOfContent err: %s", "content rubbish")
 		resp.Error = Error(ContentInRubbish, "")
 		return
 	}
@@ -426,7 +426,7 @@ func UpdateStatusOfContent(c *gin.Context) {
 		content.Status = req.Status
 		_, err = content.UpdateStatus(true, false)
 		if err != nil {
-			flog.Log.Errorf("UpdateStatusOfContent err:%s", err.Error())
+			log.Errorf("UpdateStatusOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -459,14 +459,14 @@ func UpdateNodeOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateNodeOfContent err: %s", err.Error())
+		log.Errorf("UpdateNodeOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateNodeOfContent err: %s", err.Error())
+		log.Errorf("UpdateNodeOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -476,13 +476,13 @@ func UpdateNodeOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateNodeOfContent err: %s", err.Error())
+		log.Errorf("UpdateNodeOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateNodeOfContent err: %s", "content not found")
+		log.Errorf("UpdateNodeOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -493,12 +493,12 @@ func UpdateNodeOfContent(c *gin.Context) {
 		contentNode.UserId = uu.Id
 		exist, err := contentNode.Get()
 		if err != nil {
-			flog.Log.Errorf("UpdateNodeOfContent err: %s", err.Error())
+			log.Errorf("UpdateNodeOfContent err: %s", err.Error())
 			resp.Error = Error(DBError, "")
 			return
 		}
 		if !exist {
-			flog.Log.Errorf("UpdateNodeOfContent err: %s", "node not found")
+			log.Errorf("UpdateNodeOfContent err: %s", "node not found")
 			resp.Error = Error(ContentNodeNotFound, "")
 			return
 		}
@@ -511,7 +511,7 @@ func UpdateNodeOfContent(c *gin.Context) {
 		content.SortNum = contentBefore.SortNum
 		err = content.UpdateNode(contentBefore.NodeId)
 		if err != nil {
-			flog.Log.Errorf("UpdateNodeOfContent err:%s", err.Error())
+			log.Errorf("UpdateNodeOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -543,14 +543,14 @@ func UpdateTopOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateTopOfContent err: %s", err.Error())
+		log.Errorf("UpdateTopOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateTopOfContent err: %s", err.Error())
+		log.Errorf("UpdateTopOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -560,13 +560,13 @@ func UpdateTopOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateTopOfContent err: %s", err.Error())
+		log.Errorf("UpdateTopOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateTopOfContent err: %s", "content not found")
+		log.Errorf("UpdateTopOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -578,7 +578,7 @@ func UpdateTopOfContent(c *gin.Context) {
 		content.Top = req.Top
 		_, err = content.UpdateTop()
 		if err != nil {
-			flog.Log.Errorf("UpdateTopOfContent err:%s", err.Error())
+			log.Errorf("UpdateTopOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -607,14 +607,14 @@ func UpdateCommentOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateCommentOfContent err: %s", err.Error())
+		log.Errorf("UpdateCommentOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateCommentOfContent err: %s", err.Error())
+		log.Errorf("UpdateCommentOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -624,13 +624,13 @@ func UpdateCommentOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateCommentOfContent err: %s", err.Error())
+		log.Errorf("UpdateCommentOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateCommentOfContent err: %s", "content not found")
+		log.Errorf("UpdateCommentOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -642,7 +642,7 @@ func UpdateCommentOfContent(c *gin.Context) {
 		content.CloseComment = req.CloseComment
 		_, err = content.UpdateTop()
 		if err != nil {
-			flog.Log.Errorf("UpdateCommentOfContent err:%s", err.Error())
+			log.Errorf("UpdateCommentOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -671,14 +671,14 @@ func UpdatePasswordOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
+		log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
+		log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -688,13 +688,13 @@ func UpdatePasswordOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
+		log.Errorf("UpdatePasswordOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdatePasswordOfContent err: %s", "content not found")
+		log.Errorf("UpdatePasswordOfContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -706,7 +706,7 @@ func UpdatePasswordOfContent(c *gin.Context) {
 		content.Password = req.Password
 		_, err = content.UpdatePassword()
 		if err != nil {
-			flog.Log.Errorf("UpdatePasswordOfContent err:%s", err.Error())
+			log.Errorf("UpdatePasswordOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -737,26 +737,26 @@ func UpdateInfoOfContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", err.Error())
+		log.Errorf("UpdateInfoOfContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if len(req.Describe) == 0 {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", "describe empty")
+		log.Errorf("UpdateInfoOfContent err: %s", "describe empty")
 		resp.Error = Error(ParasError, "describe empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", err.Error())
+		log.Errorf("UpdateInfoOfContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 
 	if uu.Vip == 0 {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", "not vip")
+		log.Errorf("UpdateInfoOfContent err: %s", "not vip")
 		resp.Error = Error(VipError, "")
 		return
 	}
@@ -766,13 +766,13 @@ func UpdateInfoOfContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", err.Error())
+		log.Errorf("UpdateInfoOfContent err: %s", err.Error())
 		resp.Error = Error(DBError, "")
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateInfoOfContent err: %s", "content not found")
+		log.Errorf("UpdateInfoOfContent err: %s", "content not found")
 		resp.Error = Error(DbNotFound, "content not found")
 		return
 	}
@@ -789,7 +789,7 @@ func UpdateInfoOfContent(c *gin.Context) {
 		content.Title = req.Title
 		err = content.UpdateDescribeAndHistory(req.Save)
 		if err != nil {
-			flog.Log.Errorf("UpdateInfoOfContent err:%s", err.Error())
+			log.Errorf("UpdateInfoOfContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -821,20 +821,20 @@ func SortContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if req.XID == req.YID {
-		flog.Log.Errorf("SortContent err: %s", "xid=yid not right")
+		log.Errorf("SortContent err: %s", "xid=yid not right")
 		resp.Error = Error(ParasError, "xid=yid not right")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -844,13 +844,13 @@ func SortContent(c *gin.Context) {
 	x.UserId = uu.Id
 	exist, err := x.Get()
 	if err != nil {
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("SortContent err: %s", "x content not found")
+		log.Errorf("SortContent err: %s", "x content not found")
 		resp.Error = Error(ContentNotFound, "x content not found")
 		return
 	}
@@ -862,7 +862,7 @@ func SortContent(c *gin.Context) {
 
 		err = session.Begin()
 		if err != nil {
-			flog.Log.Errorf("SortContent err: %s", err.Error())
+			log.Errorf("SortContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -871,7 +871,7 @@ func SortContent(c *gin.Context) {
 		_, err = session.Exec("update fafacms_content SET sort_num=sort_num+1 where sort_num < ? and user_id = ? and node_id = ?", x.SortNum, uu.Id, x.NodeId)
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortContent err: %s", err.Error())
+			log.Errorf("SortContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -880,7 +880,7 @@ func SortContent(c *gin.Context) {
 		_, err = session.Exec("update fafacms_content SET sort_num=0 where user_id = ? and node_id = ? and id = ?", uu.Id, x.NodeId, x.Id)
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortContent err: %s", err.Error())
+			log.Errorf("SortContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -888,7 +888,7 @@ func SortContent(c *gin.Context) {
 		err = session.Commit()
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortContent err: %s", err.Error())
+			log.Errorf("SortContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -901,19 +901,19 @@ func SortContent(c *gin.Context) {
 	y.UserId = uu.Id
 	exist, err = y.Get()
 	if err != nil {
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("SortContent err: %s", "y content not found")
+		log.Errorf("SortContent err: %s", "y content not found")
 		resp.Error = Error(ContentNotFound, "y content not found")
 		return
 	}
 
 	if x.NodeId != y.NodeId {
-		flog.Log.Errorf("SortContent err: %s", "x y content's node are different")
+		log.Errorf("SortContent err: %s", "x y content's node are different")
 		resp.Error = Error(ContentsAreInDifferentNode, "")
 		return
 	}
@@ -923,7 +923,7 @@ func SortContent(c *gin.Context) {
 
 	err = session.Begin()
 	if err != nil {
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -931,7 +931,7 @@ func SortContent(c *gin.Context) {
 	_, err = session.Exec("update fafacms_content SET sort_num=sort_num-1 where sort_num > ? and user_id = ? and node_id = ?", x.SortNum, uu.Id, x.NodeId)
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -939,7 +939,7 @@ func SortContent(c *gin.Context) {
 	_, err = session.Exec("update fafacms_content SET sort_num=sort_num+1 where sort_num > ? and user_id = ? and node_id = ?", y.SortNum, uu.Id, y.NodeId)
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -951,7 +951,7 @@ func SortContent(c *gin.Context) {
 	}
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -959,7 +959,7 @@ func SortContent(c *gin.Context) {
 	err = session.Commit()
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortContent err: %s", err.Error())
+		log.Errorf("SortContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -986,14 +986,14 @@ func PublishContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("PublishContent err: %s", err.Error())
+		log.Errorf("PublishContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("PublishContent err: %s", err.Error())
+		log.Errorf("PublishContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -1003,13 +1003,13 @@ func PublishContent(c *gin.Context) {
 	content.UserId = uu.Id
 	exist, err := content.Get()
 	if err != nil {
-		flog.Log.Errorf("PublishContent err: %s", err.Error())
+		log.Errorf("PublishContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("PublishContent err: %s", "content not found")
+		log.Errorf("PublishContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1021,7 +1021,7 @@ func PublishContent(c *gin.Context) {
 
 	err = content.PublishDescribe()
 	if err != nil {
-		flog.Log.Errorf("PublishContent err: %s", err.Error())
+		log.Errorf("PublishContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1056,14 +1056,14 @@ func RestoreContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("RestoreContent err: %s", err.Error())
+		log.Errorf("RestoreContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("RestoreContent err: %s", err.Error())
+		log.Errorf("RestoreContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -1073,13 +1073,13 @@ func RestoreContent(c *gin.Context) {
 	contentH.UserId = uu.Id
 	exist, err := contentH.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("RestoreContent err: %s", err.Error())
+		log.Errorf("RestoreContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("RestoreContent err: %s", "content history not found")
+		log.Errorf("RestoreContent err: %s", "content history not found")
 		resp.Error = Error(ContentHistoryNotFound, "")
 		return
 	}
@@ -1089,13 +1089,13 @@ func RestoreContent(c *gin.Context) {
 	content.UserId = uu.Id
 	exist, err = content.Get()
 	if err != nil {
-		flog.Log.Errorf("RestoreContent err: %s", err.Error())
+		log.Errorf("RestoreContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("RestoreContent err: %s", "content not found")
+		log.Errorf("RestoreContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1104,7 +1104,7 @@ func RestoreContent(c *gin.Context) {
 	content.Describe = contentH.Describe
 	err = content.ResetDescribe(req.Save)
 	if err != nil {
-		flog.Log.Errorf("RestoreContent err: %s", err.Error())
+		log.Errorf("RestoreContent err: %s", err.Error())
 		resp.Error = Error(DBError, "")
 		return
 	}
@@ -1144,7 +1144,7 @@ func ListContent(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListContent err: %s", err.Error())
+		log.Errorf("ListContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -1175,7 +1175,7 @@ func ListContentHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListContent err: %s", err.Error())
+		log.Errorf("ListContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -1287,33 +1287,19 @@ func ListContentHelper(c *gin.Context, userId int64) {
 		session.And("first_publish_time<?", req.FirstPublishTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListContent err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	// if count>0 start list
 	cs := make([]model.Content, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.ContentSortName)
-		// do query
-		err = session.Omit("describe", "pre_describe").Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListContent err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.ContentSortName)
+
+	// do query
+	total, err := session.Omit("describe", "pre_describe").FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListContent err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -1344,7 +1330,7 @@ func ListContentHistory(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListContentHistory err: %s", err.Error())
+		log.Errorf("ListContentHistory err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -1375,7 +1361,7 @@ func ListContentHistoryHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListContentHistory err: %s", err.Error())
+		log.Errorf("ListContentHistory err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -1411,33 +1397,19 @@ func ListContentHistoryHelper(c *gin.Context, userId int64) {
 		session.And("create_time<?", req.CreateTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListContentHistory err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	// if count>0 start list
 	cs := make([]model.ContentHistory, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.ContentHistorySortName)
-		// do query
-		err = session.Omit("describe").Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListContentHistory err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.ContentHistorySortName)
+
+	// do query
+	total, err := session.Omit("describe").FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListContentHistory err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -1468,7 +1440,7 @@ func TakeContentHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("TakeContent err: %s", err.Error())
+		log.Errorf("TakeContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -1478,13 +1450,13 @@ func TakeContentHelper(c *gin.Context, userId int64) {
 	content.UserId = userId
 	exist, err := content.Get()
 	if err != nil {
-		flog.Log.Errorf("TakeContent err: %s", err.Error())
+		log.Errorf("TakeContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("TakeContent err: %s", "content not found")
+		log.Errorf("TakeContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1497,7 +1469,7 @@ func TakeContent(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("TakeContent err: %s", err.Error())
+		log.Errorf("TakeContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -1530,7 +1502,7 @@ func TakeContentHistoryHelper(c *gin.Context, userId int64) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("TakeContentHistory err: %s", err.Error())
+		log.Errorf("TakeContentHistory err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -1540,13 +1512,13 @@ func TakeContentHistoryHelper(c *gin.Context, userId int64) {
 	content.UserId = userId
 	exist, err := content.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("TakeContentHistory err: %s", err.Error())
+		log.Errorf("TakeContentHistory err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("TakeContentHistory err: %s", "content history not found")
+		log.Errorf("TakeContentHistory err: %s", "content history not found")
 		resp.Error = Error(ContentHistoryNotFound, "")
 		return
 	}
@@ -1559,7 +1531,7 @@ func TakeContentHistory(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("TakeContentHistory err: %s", err.Error())
+		log.Errorf("TakeContentHistory err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -1592,20 +1564,20 @@ func SentContentToRubbish(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("SentContentToRubbish err: %s", err.Error())
+		log.Errorf("SentContentToRubbish err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("SentContentToRubbish err: %s", err.Error())
+		log.Errorf("SentContentToRubbish err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 
 	if uu.Vip == 0 {
-		flog.Log.Errorf("SentContentToRubbish err: %s", "not vip")
+		log.Errorf("SentContentToRubbish err: %s", "not vip")
 		resp.Error = Error(VipError, "")
 		return
 	}
@@ -1615,13 +1587,13 @@ func SentContentToRubbish(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("SentContentToRubbish err: %s", err.Error())
+		log.Errorf("SentContentToRubbish err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("SentContentToRubbish err: %s", "content not found")
+		log.Errorf("SentContentToRubbish err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1632,7 +1604,7 @@ func SentContentToRubbish(c *gin.Context) {
 	}
 
 	//if contentBefore.Status == 2 {
-	//	flog.Log.Errorf("SentContentToRubbish err: %s", "can not sent to rubbish")
+	//	log.Errorf("SentContentToRubbish err: %s", "can not sent to rubbish")
 	//	resp.Error = Error(ContentBanPermit, "can not sent to rubbish")
 	//	return
 	//}
@@ -1643,7 +1615,7 @@ func SentContentToRubbish(c *gin.Context) {
 	content.Status = 3
 	_, err = content.UpdateStatus(true, false)
 	if err != nil {
-		flog.Log.Errorf("SentContentToRubbish err:%s", err.Error())
+		log.Errorf("SentContentToRubbish err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1673,14 +1645,14 @@ func ReCycleOfContentInRubbish(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
+		log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
+		log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -1690,13 +1662,13 @@ func ReCycleOfContentInRubbish(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
+		log.Errorf("ReCycleOfContentInRubbish err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("ReCycleOfContentInRubbish err: %s", "content not found")
+		log.Errorf("ReCycleOfContentInRubbish err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1713,7 +1685,7 @@ func ReCycleOfContentInRubbish(c *gin.Context) {
 		}
 		_, err = content.UpdateStatus(true, false)
 		if err != nil {
-			flog.Log.Errorf("ReCycleOfContentInRubbish err:%s", err.Error())
+			log.Errorf("ReCycleOfContentInRubbish err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -1745,14 +1717,14 @@ func ReallyDeleteContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -1762,13 +1734,13 @@ func ReallyDeleteContent(c *gin.Context) {
 	contentBefore.UserId = uu.Id
 	exist, err := contentBefore.Get()
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("ReallyDeleteContent err: %s", "content not found")
+		log.Errorf("ReallyDeleteContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
@@ -1779,7 +1751,7 @@ func ReallyDeleteContent(c *gin.Context) {
 		content.UserId = uu.Id
 		err = content.Delete()
 		if err != nil {
-			flog.Log.Errorf("ReallyDeleteContent err:%s", err.Error())
+			log.Errorf("ReallyDeleteContent err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -1788,7 +1760,7 @@ func ReallyDeleteContent(c *gin.Context) {
 		go SendToLoop(uu.Id, contentBefore.NodeId, 2)
 		go SendToLoop(uu.Id, 0, 3)
 	} else {
-		flog.Log.Errorf("ReallyDeleteContent err: %s", "content can not delete")
+		log.Errorf("ReallyDeleteContent err: %s", "content can not delete")
 		resp.Error = Error(ContentCanNotDelete, "")
 		return
 	}
@@ -1815,14 +1787,14 @@ func ReallyDeleteHistoryContent(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -1832,13 +1804,13 @@ func ReallyDeleteHistoryContent(c *gin.Context) {
 	contentBeforeH.UserId = uu.Id
 	exist, err := contentBeforeH.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
+		log.Errorf("ReallyDeleteHistoryContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("ReallyDeleteHistoryContent err: %s", "content not found")
+		log.Errorf("ReallyDeleteHistoryContent err: %s", "content not found")
 		resp.Error = Error(ContentHistoryNotFound, "")
 		return
 	}
@@ -1848,7 +1820,7 @@ func ReallyDeleteHistoryContent(c *gin.Context) {
 	contentH.UserId = uu.Id
 	_, err = contentH.Delete()
 	if err != nil {
-		flog.Log.Errorf("ReallyDeleteHistoryContent err:%s", err.Error())
+		log.Errorf("ReallyDeleteHistoryContent err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}

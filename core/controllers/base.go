@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/go-xorm/xorm"
 	"strings"
+	"xorm.io/xorm"
 )
 
 // error code
@@ -76,7 +76,7 @@ const (
 	Unknown   = 99999
 )
 
-// error code message map
+// ErrorMap error code message map
 var ErrorMap = map[int]string{
 	AddUserCacheError:                   "add user cache err",
 	DeleteUserCacheError:                "delete user cache err",
@@ -143,7 +143,7 @@ var ErrorMap = map[int]string{
 	VipError:                            "you are not vip",
 }
 
-// common response
+// Resp common response
 type Resp struct {
 	Flag  bool        `json:"flag"`
 	Cid   string      `json:"cid,omitempty"`
@@ -151,7 +151,7 @@ type Resp struct {
 	Data  interface{} `json:"data,omitempty"`
 }
 
-// inner error response
+// ErrorResp inner error response
 type ErrorResp struct {
 	ErrorID  int    `json:"id"`
 	ErrorMsg string `json:"msg"`
@@ -179,7 +179,7 @@ func Error(code int, detail string) *ErrorResp {
 	}
 }
 
-// list api page helper
+// PageHelp list api page helper
 type PageHelp struct {
 	Limit int `json:"limit"`
 	Total int `json:"total"`

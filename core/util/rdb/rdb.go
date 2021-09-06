@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/go-xorm/core"
 	"os"
 	"time"
+	"xorm.io/xorm/log"
+	"xorm.io/xorm/names"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/xorm"
+	"xorm.io/xorm"
 	//_ "github.com/lib/pq"
 )
 
@@ -19,8 +20,8 @@ const (
 )
 
 type MyDbConfig struct {
-	DriverName string `yaml:"DriverName"`
-	DbConfig `yaml:",inline"`
+	DriverName      string `yaml:"DriverName"`
+	DbConfig        `yaml:",inline"`
 	MaxIdleConns    int    `yaml:"MaxIdleConns"`
 	MaxOpenConns    int    `yaml:"MaxOpenConns"`
 	DebugToFile     bool   `yaml:"DebugToFile"`
@@ -104,7 +105,7 @@ func NewDb(config MyDbConfig) (*MyDb, error) {
 				if err != nil {
 					panic(err)
 				}
-				engine.SetLogger(xorm.NewSimpleLogger(f))
+				engine.SetLogger(log.NewSimpleLogger(f))
 			}
 			engine.ShowSQL(true)
 		}
@@ -112,7 +113,7 @@ func NewDb(config MyDbConfig) (*MyDb, error) {
 		engine.TZLocation, _ = time.LoadLocation("Asia/Shanghai")
 
 		if config.Prefix != "" {
-			tbMapper := core.NewPrefixMapper(core.SnakeMapper{}, config.Prefix)
+			tbMapper := names.NewPrefixMapper(names.SnakeMapper{}, config.Prefix)
 			engine.SetTableMapper(tbMapper)
 		}
 

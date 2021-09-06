@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
+	log "github.com/hunterhug/golog"
 )
 
 type CreateNodeRequest struct {
@@ -30,20 +30,20 @@ func CreateNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("CreateNode err: %s", err.Error())
+		log.Errorf("CreateNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("CreateNode err: %s", err.Error())
+		log.Errorf("CreateNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 
 	if uu.Vip == 0 {
-		flog.Log.Errorf("CreateNode err: %s", "not vip")
+		log.Errorf("CreateNode err: %s", "not vip")
 		resp.Error = Error(VipError, "")
 		return
 	}
@@ -56,12 +56,12 @@ func CreateNode(c *gin.Context) {
 		n.Seo = req.Seo
 		exist, err := n.CheckSeoValid()
 		if err != nil {
-			flog.Log.Errorf("CreateNode err: %s", err.Error())
+			log.Errorf("CreateNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if exist {
-			flog.Log.Errorf("CreateNode err: %s", "node seo already be use")
+			log.Errorf("CreateNode err: %s", "node seo already be use")
 			resp.Error = Error(ContentNodeSeoAlreadyBeUsed, "")
 			return
 		}
@@ -75,13 +75,13 @@ func CreateNode(c *gin.Context) {
 		n.ParentNodeId = req.ParentNodeId
 		exist, err := n.CheckParentValid()
 		if err != nil {
-			flog.Log.Errorf("CreateNode err: %s", err.Error())
+			log.Errorf("CreateNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if !exist {
 			// parent not exist
-			flog.Log.Errorf("CreateNode err: %s", "parent content node not found")
+			log.Errorf("CreateNode err: %s", "parent content node not found")
 			resp.Error = Error(ContentParentNodeNotFound, "")
 			return
 		}
@@ -96,13 +96,13 @@ func CreateNode(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("CreateNode err:%s", err.Error())
+			log.Errorf("CreateNode err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("CreateNode err: image not exist")
+			log.Errorf("CreateNode err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "image url not exist")
 			return
 		}
@@ -114,7 +114,7 @@ func CreateNode(c *gin.Context) {
 	n.SortNum, _ = n.CountNodeNum()
 	err = n.InsertOne()
 	if err != nil {
-		flog.Log.Errorf("CreateNode err:%s", err.Error())
+		log.Errorf("CreateNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -164,14 +164,14 @@ func UpdateSeoOfNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfNode err: %s", err.Error())
+		log.Errorf("UpdateSeoOfNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfNode err: %s", err.Error())
+		log.Errorf("UpdateSeoOfNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -182,12 +182,12 @@ func UpdateSeoOfNode(c *gin.Context) {
 	// Get info of node
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateSeoOfNode err: %s", err.Error())
+		log.Errorf("UpdateSeoOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("UpdateSeoOfNode err: %s", "content node not found")
+		log.Errorf("UpdateSeoOfNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -205,13 +205,13 @@ func UpdateSeoOfNode(c *gin.Context) {
 		// check seo is valid
 		exist, err := after.CheckSeoValid()
 		if err != nil {
-			flog.Log.Errorf("UpdateSeoOfNode err: %s", err.Error())
+			log.Errorf("UpdateSeoOfNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if exist {
 			// SEO been occupy will err
-			flog.Log.Errorf("UpdateSeoOfNode err: %s", "seo been used")
+			log.Errorf("UpdateSeoOfNode err: %s", "seo been used")
 			resp.Error = Error(ContentNodeSeoAlreadyBeUsed, "")
 			return
 		}
@@ -221,7 +221,7 @@ func UpdateSeoOfNode(c *gin.Context) {
 		// update the seo
 		err = after.UpdateSeo()
 		if err != nil {
-			flog.Log.Errorf("UpdateSeoOfNode err:%s", err.Error())
+			log.Errorf("UpdateSeoOfNode err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -244,14 +244,14 @@ func UpdateInfoOfNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, "")
 		return
 	}
@@ -261,12 +261,12 @@ func UpdateInfoOfNode(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", "content node not found")
+		log.Errorf("UpdateInfoOfNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -286,7 +286,7 @@ func UpdateInfoOfNode(c *gin.Context) {
 
 	err = after.UpdateInfo()
 	if err != nil {
-		flog.Log.Errorf("UpdateNode err:%s", err.Error())
+		log.Errorf("UpdateNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -308,14 +308,14 @@ func UpdateImageOfNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, "")
 		return
 	}
@@ -325,12 +325,12 @@ func UpdateImageOfNode(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", err.Error())
+		log.Errorf("UpdateInfoOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("UpdateInfoOfNode err: %s", "content node not found")
+		log.Errorf("UpdateInfoOfNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -345,20 +345,20 @@ func UpdateImageOfNode(c *gin.Context) {
 		p.Url = req.ImagePath
 		ok, err := p.Exist()
 		if err != nil {
-			flog.Log.Errorf("UpdateInfoOfNode err:%s", err.Error())
+			log.Errorf("UpdateInfoOfNode err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 
 		if !ok {
-			flog.Log.Errorf("UpdateInfoOfNode err: image not exist")
+			log.Errorf("UpdateInfoOfNode err: image not exist")
 			resp.Error = Error(FileCanNotBeFound, "")
 			return
 		}
 
 		err = after.UpdateImage()
 		if err != nil {
-			flog.Log.Errorf("UpdateNode err:%s", err.Error())
+			log.Errorf("UpdateNode err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -382,14 +382,14 @@ func UpdateStatusOfNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfNode err: %s", err.Error())
+		log.Errorf("UpdateStatusOfNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfNode err: %s", err.Error())
+		log.Errorf("UpdateStatusOfNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -399,12 +399,12 @@ func UpdateStatusOfNode(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfNode err: %s", err.Error())
+		log.Errorf("UpdateStatusOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("UpdateStatusOfNode err: %s", "content node not found")
+		log.Errorf("UpdateStatusOfNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -416,7 +416,7 @@ func UpdateStatusOfNode(c *gin.Context) {
 
 	err = after.UpdateStatus()
 	if err != nil {
-		flog.Log.Errorf("UpdateStatusOfNode err:%s", err.Error())
+		log.Errorf("UpdateStatusOfNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -441,20 +441,20 @@ func UpdateParentOfNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", err.Error())
+		log.Errorf("UpdateParentOfNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if req.ParentNodeId == req.Id {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", "self can not be parent")
+		log.Errorf("UpdateParentOfNode err: %s", "self can not be parent")
 		resp.Error = Error(ParasError, "self can not be parent")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", err.Error())
+		log.Errorf("UpdateParentOfNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -464,13 +464,13 @@ func UpdateParentOfNode(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", err.Error())
+		log.Errorf("UpdateParentOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", "content node not found")
+		log.Errorf("UpdateParentOfNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -478,13 +478,13 @@ func UpdateParentOfNode(c *gin.Context) {
 	// Who has children can not be child due to we only design 2 level
 	childNum, err := n.CheckChildrenNum()
 	if err != nil {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", err.Error())
+		log.Errorf("UpdateParentOfNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if childNum > 0 {
-		flog.Log.Errorf("UpdateParentOfNode err: %s", "has child")
+		log.Errorf("UpdateParentOfNode err: %s", "has child")
 		resp.Error = Error(ContentNodeHasChildren, "has child")
 		return
 	}
@@ -518,12 +518,12 @@ func UpdateParentOfNode(c *gin.Context) {
 		// parent is exit?
 		exist, err := after.CheckParentValid()
 		if err != nil {
-			flog.Log.Errorf("UpdateParentOfNode err: %s", err.Error())
+			log.Errorf("UpdateParentOfNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 		if !exist {
-			flog.Log.Errorf("UpdateParentOfNode err: %s", "parent content node not found")
+			log.Errorf("UpdateParentOfNode err: %s", "parent content node not found")
 			resp.Error = Error(ContentParentNodeNotFound, "")
 			return
 		}
@@ -534,7 +534,7 @@ func UpdateParentOfNode(c *gin.Context) {
 
 	err = after.UpdateParent(beforeParentNode)
 	if err != nil {
-		flog.Log.Errorf("UpdateParentOfNode err:%s", err.Error())
+		log.Errorf("UpdateParentOfNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -561,14 +561,14 @@ func DeleteNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err: %s", err.Error())
+		log.Errorf("DeleteNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err: %s", err.Error())
+		log.Errorf("DeleteNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -578,12 +578,12 @@ func DeleteNode(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err: %s", err.Error())
+		log.Errorf("DeleteNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("DeleteNode err: %s", "content node not found")
+		log.Errorf("DeleteNode err: %s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -591,13 +591,13 @@ func DeleteNode(c *gin.Context) {
 	// can not delete when has node children
 	childNum, err := n.CheckChildrenNum()
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if childNum >= 1 {
-		flog.Log.Errorf("DeleteNode err:%s", "has node child")
+		log.Errorf("DeleteNode err:%s", "has node child")
 		resp.Error = Error(ContentNodeHasChildren, "")
 		return
 	}
@@ -609,13 +609,13 @@ func DeleteNode(c *gin.Context) {
 	// can not delete when has content
 	normalContentNum, err := content.CountNumUnderNode()
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if normalContentNum >= 1 {
-		flog.Log.Errorf("DeleteNode err:%s", "has content child")
+		log.Errorf("DeleteNode err:%s", "has content child")
 		resp.Error = Error(ContentNodeHasContentCanNotDelete, "")
 		return
 	}
@@ -625,7 +625,7 @@ func DeleteNode(c *gin.Context) {
 
 	err = session.Begin()
 	if err != nil {
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -634,7 +634,7 @@ func DeleteNode(c *gin.Context) {
 	_, err = session.Exec("update fafacms_content_node SET sort_num=sort_num-1 where sort_num > ? and user_id = ? and parent_node_id = ?", n.SortNum, n.UserId, n.ParentNodeId)
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -642,7 +642,7 @@ func DeleteNode(c *gin.Context) {
 	_, err = session.Where("id=?", n.Id).Delete(new(model.ContentNode))
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -650,7 +650,7 @@ func DeleteNode(c *gin.Context) {
 	err = session.Commit()
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("DeleteNode err:%s", err.Error())
+		log.Errorf("DeleteNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -671,7 +671,7 @@ func TakeNode(c *gin.Context) {
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("TakeNode err: %s", err.Error())
+		log.Errorf("TakeNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -693,7 +693,7 @@ func TakeNode(c *gin.Context) {
 	}
 
 	if !isOne {
-		flog.Log.Errorf("Node err:%s", "id or seo empty")
+		log.Errorf("Node err:%s", "id or seo empty")
 		resp.Error = Error(ParasError, "id or seo empty")
 		return
 	}
@@ -701,13 +701,13 @@ func TakeNode(c *gin.Context) {
 	v := new(model.ContentNode)
 	exist, err := session.Get(v)
 	if err != nil {
-		flog.Log.Errorf("Node err:%s", err.Error())
+		log.Errorf("Node err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("Node err:%s", "content node not found")
+		log.Errorf("Node err:%s", "content node not found")
 		resp.Error = Error(ContentNodeNotFound, "")
 		return
 	}
@@ -736,7 +736,7 @@ func TakeNode(c *gin.Context) {
 		ns := make([]model.ContentNode, 0)
 		err = model.FaFaRdb.Client.Where("parent_node_id=?", f.Id).Find(&ns)
 		if err != nil {
-			flog.Log.Errorf("Node err:%s", err.Error())
+			log.Errorf("Node err:%s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -772,7 +772,7 @@ func ListNode(c *gin.Context) {
 	resp := new(Resp)
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ListNode err: %s", err.Error())
+		log.Errorf("ListNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		JSONL(c, 200, nil, resp)
 		return
@@ -806,7 +806,7 @@ func ListNodeHelper(c *gin.Context, userId int64) {
 	}
 
 	if req.UserId == 0 && req.UserName == "" {
-		flog.Log.Errorf("ListNode err:%s", "")
+		log.Errorf("ListNode err:%s", "")
 		resp.Error = Error(ParasError, "where is empty")
 		return
 	}
@@ -828,7 +828,7 @@ func ListNodeHelper(c *gin.Context, userId int64) {
 	Build(session, req.Sort, model.ContentNodeSortName)
 	err := session.Find(&nodes)
 	if err != nil {
-		flog.Log.Errorf("ListNode err:%s", err.Error())
+		log.Errorf("ListNode err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -919,20 +919,20 @@ func SortNode(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
 
 	if req.XID == req.YID {
-		flog.Log.Errorf("SortNode err: %s", "xid=yid not right")
+		log.Errorf("SortNode err: %s", "xid=yid not right")
 		resp.Error = Error(ParasError, "xid=yid not right")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -942,13 +942,13 @@ func SortNode(c *gin.Context) {
 	x.UserId = uu.Id
 	exist, err := x.GetSortOneNode()
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("SortNode err: %s", "x node not found")
+		log.Errorf("SortNode err: %s", "x node not found")
 		resp.Error = Error(ContentNodeNotFound, "x node not found")
 		return
 	}
@@ -960,7 +960,7 @@ func SortNode(c *gin.Context) {
 
 		err = session.Begin()
 		if err != nil {
-			flog.Log.Errorf("SortNode err: %s", err.Error())
+			log.Errorf("SortNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -972,7 +972,7 @@ func SortNode(c *gin.Context) {
 		_, err = session.Exec("update fafacms_content_node SET sort_num=sort_num+1 where sort_num < ? and user_id = ? and parent_node_id = ?", x.SortNum, uu.Id, x.ParentNodeId)
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortNode err: %s", err.Error())
+			log.Errorf("SortNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -981,7 +981,7 @@ func SortNode(c *gin.Context) {
 		_, err = session.Exec("update fafacms_content_node SET sort_num=0 where user_id = ? and parent_node_id = ? and id = ?", uu.Id, x.ParentNodeId, x.Id)
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortNode err: %s", err.Error())
+			log.Errorf("SortNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -989,7 +989,7 @@ func SortNode(c *gin.Context) {
 		err = session.Commit()
 		if err != nil {
 			session.Rollback()
-			flog.Log.Errorf("SortNode err: %s", err.Error())
+			log.Errorf("SortNode err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
@@ -1003,34 +1003,34 @@ func SortNode(c *gin.Context) {
 	y.UserId = uu.Id
 	exist, err = y.GetSortOneNode()
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !exist {
-		flog.Log.Errorf("SortNode err: %s", "y node not found")
+		log.Errorf("SortNode err: %s", "y node not found")
 		resp.Error = Error(ContentNodeNotFound, "y node not found")
 		return
 	}
 
 	// x is father of y, can not to be brother of y
 	if y.ParentNodeId == x.Id {
-		flog.Log.Errorf("SortNode err: %s", "can not move node to be his child's brother")
+		log.Errorf("SortNode err: %s", "can not move node to be his child's brother")
 		resp.Error = Error(ContentNodeSortConflict, "can not move node to be his child's brother")
 		return
 	}
 
 	children, err := x.CheckChildrenNum()
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	// y is son, but x want to be y's brother, however, x has children
 	if y.Level == 1 && children > 0 {
-		flog.Log.Errorf("SortNode err: %s", "x has child can not move to be other's child's brother")
+		log.Errorf("SortNode err: %s", "x has child can not move to be other's child's brother")
 		resp.Error = Error(ContentNodeSortConflict, "x has child can not move to be other's child's brother")
 		return
 	}
@@ -1040,7 +1040,7 @@ func SortNode(c *gin.Context) {
 
 	err = session.Begin()
 	if err != nil {
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1049,7 +1049,7 @@ func SortNode(c *gin.Context) {
 	_, err = session.Exec("update fafacms_content_node SET sort_num=sort_num-1 where sort_num > ? and user_id = ? and parent_node_id = ?", x.SortNum, uu.Id, x.ParentNodeId)
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1058,7 +1058,7 @@ func SortNode(c *gin.Context) {
 	_, err = session.Exec("update fafacms_content_node SET sort_num=sort_num+1 where sort_num > ? and user_id = ? and parent_node_id = ?", y.SortNum, uu.Id, y.ParentNodeId)
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1100,7 +1100,7 @@ func SortNode(c *gin.Context) {
 	}
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -1108,7 +1108,7 @@ func SortNode(c *gin.Context) {
 	err = session.Commit()
 	if err != nil {
 		session.Rollback()
-		flog.Log.Errorf("SortNode err: %s", err.Error())
+		log.Errorf("SortNode err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}

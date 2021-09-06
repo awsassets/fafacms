@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
+	log "github.com/hunterhug/golog"
 	"time"
 )
 
@@ -23,36 +23,36 @@ func SendToLoop(userId, nodeId int64, t int) {
 }
 
 func LoopCount() {
-	flog.Log.Debugf("Ticker start")
+	log.Debugf("Ticker start")
 	for {
 		select {
 		case v := <-LoopChan:
-			flog.Log.Debugf("Ticker Count: %#v", v)
+			log.Debugf("Ticker Count: %#v", v)
 			if v.T == 1 {
 				if v.UserId != 0 {
 					err := model.CountContentAll(v.UserId)
 					if err != nil {
-						flog.Log.Errorf("Ticker Count all content err: %s", err.Error())
+						log.Errorf("Ticker Count all content err: %s", err.Error())
 					}
 				}
 			} else if v.T == 2 {
 				if v.UserId != 0 && v.NodeId != 0 {
 					err := model.CountContentOneNode(v.UserId, v.NodeId)
 					if err != nil {
-						flog.Log.Errorf("Ticker Count node content err: %s", err.Error())
+						log.Errorf("Ticker Count node content err: %s", err.Error())
 					}
 				}
 			} else if v.T == 3 {
 				if v.UserId != 0 {
 					err := model.CountContentCool(v.UserId)
 					if err != nil {
-						flog.Log.Errorf("Ticker Count all content cool err: %s", err.Error())
+						log.Errorf("Ticker Count all content cool err: %s", err.Error())
 					}
 				}
 			}
 
 		case <-time.After(5 * time.Second):
-			//flog.Log.Debugf("Ticker...")
+			//log.Debugf("Ticker...")
 
 		}
 	}

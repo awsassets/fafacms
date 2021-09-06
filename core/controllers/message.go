@@ -3,9 +3,9 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
 	"github.com/hunterhug/fafacms/core/util"
+	log "github.com/hunterhug/golog"
 	"math"
 )
 
@@ -50,7 +50,7 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err: %s", err.Error())
+		log.Errorf("ListMessageHelper err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -61,7 +61,7 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	if !isAdmin {
 		uu, err := GetUserSession(c)
 		if err != nil {
-			flog.Log.Errorf("ListMessageHelper err: %s", err.Error())
+			log.Errorf("ListMessageHelper err: %s", err.Error())
 			resp.Error = Error(GetUserSessionError, err.Error())
 			return
 		}
@@ -127,20 +127,10 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 		session.And("global_message_id=?", req.GlobalMessageId)
 	}
 
-	// count all message num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
 	// count unread messages
 	countMap, err := model.GroupCount(yourUserId)
 	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
+		log.Errorf("ListMessageHelper err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -148,20 +138,16 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	// if count>0 start list
 	cs := make([]model.Message, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.MessageSortName)
-		// do query
-		err = session.Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.MessageSortName)
+
+	// do query
+	total, err := session.FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListMessageHelper err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	contentIds := make(map[int64]struct{})
@@ -197,7 +183,7 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	// get all none delete comment
 	comments, err := model.GetComment(util.MapToArray(commentIds), all)
 	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
+		log.Errorf("ListMessageHelper err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -211,7 +197,7 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	// get extra comment info
 	comments2, user2, err := model.GetCommentAndCommentUser(util.MapToArray(commentIds2), all, util.MapToArray(userIds), yourUserId)
 	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
+		log.Errorf("ListMessageHelper err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -219,7 +205,7 @@ func ListMessageHelper(c *gin.Context, isAdmin bool) {
 	// get content base info
 	contents, err := model.GetContentHelper(util.MapToArray(contentIds), all, yourUserId)
 	if err != nil {
-		flog.Log.Errorf("ListMessageHelper err:%s", err.Error())
+		log.Errorf("ListMessageHelper err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -263,14 +249,14 @@ func ReadMessage(c *gin.Context) {
 	}
 
 	if len(req.Ids) == 0 {
-		flog.Log.Errorf("ReadMessage err: %s", "ids empty")
+		log.Errorf("ReadMessage err: %s", "ids empty")
 		resp.Error = Error(ParasError, "ids empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("ReadMessage err: %s", err.Error())
+		log.Errorf("ReadMessage err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -280,7 +266,7 @@ func ReadMessage(c *gin.Context) {
 	m.ReceiveStatus = 1
 	err = m.ReceiveUpdate(req.Ids)
 	if err != nil {
-		flog.Log.Errorf("ReadMessage err: %s", err.Error())
+		log.Errorf("ReadMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -305,13 +291,13 @@ func DeleteMessage(c *gin.Context) {
 	}
 
 	if len(req.Ids) == 0 {
-		flog.Log.Errorf("DeleteMessage err: %s", "ids empty")
+		log.Errorf("DeleteMessage err: %s", "ids empty")
 		resp.Error = Error(ParasError, "ids empty")
 		return
 	}
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("DeleteMessage err: %s", err.Error())
+		log.Errorf("DeleteMessage err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -321,7 +307,7 @@ func DeleteMessage(c *gin.Context) {
 	m.ReceiveStatus = 2
 	err = m.ReceiveUpdate(req.Ids)
 	if err != nil {
-		flog.Log.Errorf("DeleteMessage err: %s", err.Error())
+		log.Errorf("DeleteMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -351,14 +337,14 @@ func CreateGlobalMessage(c *gin.Context) {
 	if !req.AllPeople {
 		// alone sent to all user_ids, should not empty
 		if len(req.UserIds) == 0 {
-			flog.Log.Errorf("CreateGlobalMessage err: %s", "user_ids empty")
+			log.Errorf("CreateGlobalMessage err: %s", "user_ids empty")
 			resp.Error = Error(ParasError, "user_ids empty")
 			return
 		}
 
 		// user should all exit
 		if !model.UserAllExist(req.UserIds) {
-			flog.Log.Errorf("CreateGlobalMessage err: %s", "user_ids not right")
+			log.Errorf("CreateGlobalMessage err: %s", "user_ids not right")
 			resp.Error = Error(ParasError, "user_ids not right")
 			return
 		}
@@ -373,7 +359,7 @@ func CreateGlobalMessage(c *gin.Context) {
 			m.ReceiveUserId = v
 			err := m.Insert()
 			if err != nil {
-				flog.Log.Errorf("CreateGlobalMessage err: %s", err.Error())
+				log.Errorf("CreateGlobalMessage err: %s", err.Error())
 				resp.Error = Error(DBError, err.Error())
 				return
 			}
@@ -390,7 +376,7 @@ func CreateGlobalMessage(c *gin.Context) {
 	// how much user now
 	uCount, err := model.UserCount()
 	if err != nil {
-		flog.Log.Errorf("CreateGlobalMessage err: %s", err.Error())
+		log.Errorf("CreateGlobalMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -401,7 +387,7 @@ func CreateGlobalMessage(c *gin.Context) {
 
 	err = gm.Insert()
 	if err != nil {
-		flog.Log.Errorf("CreateGlobalMessage err: %s", err.Error())
+		log.Errorf("CreateGlobalMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -440,7 +426,7 @@ func ListGlobalMessage(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("ListGlobalMessage err: %s", err.Error())
+		log.Errorf("ListGlobalMessage err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -469,33 +455,18 @@ func ListGlobalMessage(c *gin.Context) {
 		session.And("create_time<?", req.CreateTimeEnd)
 	}
 
-	// count num
-	countSession := session.Clone()
-	defer countSession.Close()
-	total, err := countSession.Count()
-	if err != nil {
-		flog.Log.Errorf("ListGlobalMessage err:%s", err.Error())
-		resp.Error = Error(DBError, err.Error())
-		return
-	}
-
-	// if count>0 start list
 	cs := make([]model.GlobalMessage, 0)
 	p := &req.PageHelp
-	if total == 0 {
-		if p.Limit == 0 {
-			p.Limit = 20
-		}
-	} else {
-		// sql build
-		p.build(session, req.Sort, model.GlobalMessageSortName)
-		// do query
-		err = session.Find(&cs)
-		if err != nil {
-			flog.Log.Errorf("ListGlobalMessage err:%s", err.Error())
-			resp.Error = Error(DBError, err.Error())
-			return
-		}
+
+	// sql build
+	p.build(session, req.Sort, model.GlobalMessageSortName)
+
+	// do query
+	total, err := session.FindAndCount(&cs)
+	if err != nil {
+		log.Errorf("ListGlobalMessage err:%s", err.Error())
+		resp.Error = Error(DBError, err.Error())
+		return
 	}
 
 	// result
@@ -527,7 +498,7 @@ func UpdateGlobalMessage(c *gin.Context) {
 	var validate = validator.New()
 	err := validate.Struct(req)
 	if err != nil {
-		flog.Log.Errorf("UpdateGlobalMessage err: %s", err.Error())
+		log.Errorf("UpdateGlobalMessage err: %s", err.Error())
 		resp.Error = Error(ParasError, err.Error())
 		return
 	}
@@ -537,12 +508,12 @@ func UpdateGlobalMessage(c *gin.Context) {
 
 	exist, err := n.Get()
 	if err != nil {
-		flog.Log.Errorf("UpdateGlobalMessage err: %s", err.Error())
+		log.Errorf("UpdateGlobalMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 	if !exist {
-		flog.Log.Errorf("UpdateGlobalMessage err: %s", "global message not found")
+		log.Errorf("UpdateGlobalMessage err: %s", "global message not found")
 		resp.Error = Error(GlobalMessageNotFound, "")
 		return
 	}
@@ -553,7 +524,7 @@ func UpdateGlobalMessage(c *gin.Context) {
 
 	_, err = after.Update()
 	if err != nil {
-		flog.Log.Errorf("UpdateGlobalMessage err:%s", err.Error())
+		log.Errorf("UpdateGlobalMessage err:%s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -578,7 +549,7 @@ func SendPrivateMessage(c *gin.Context) {
 	}
 
 	if req.UserId == 0 {
-		flog.Log.Errorf("SendPrivateMessage err: %s", "user_id empty")
+		log.Errorf("SendPrivateMessage err: %s", "user_id empty")
 		resp.Error = Error(ParasError, "user_id empty")
 		return
 	}
@@ -587,33 +558,33 @@ func SendPrivateMessage(c *gin.Context) {
 	targetUser.Id = req.UserId
 	ok, err := targetUser.GetRaw()
 	if err != nil {
-		flog.Log.Errorf("SendPrivateMessage err: %s", err.Error())
+		log.Errorf("SendPrivateMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("SendPrivateMessage err: %s", "user not found")
+		log.Errorf("SendPrivateMessage err: %s", "user not found")
 		resp.Error = Error(UserNotFound, "")
 		return
 	}
 
 	if targetUser.Status == 0 {
-		flog.Log.Errorf("SendPrivateMessage err: %s", "user not activate")
+		log.Errorf("SendPrivateMessage err: %s", "user not activate")
 		resp.Error = Error(UserNotActivate, "")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("SendPrivateMessage err: %s", err.Error())
+		log.Errorf("SendPrivateMessage err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
 
 	err = model.Private(uu.Id, targetUser.Id, req.Message)
 	if err != nil {
-		flog.Log.Errorf("SendPrivateMessage err: %s", err.Error())
+		log.Errorf("SendPrivateMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -638,13 +609,13 @@ func DeletePrivateMessage(c *gin.Context) {
 	}
 
 	if len(req.Ids) == 0 {
-		flog.Log.Errorf("DeletePrivateMessage err: %s", "ids empty")
+		log.Errorf("DeletePrivateMessage err: %s", "ids empty")
 		resp.Error = Error(ParasError, "ids empty")
 		return
 	}
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("DeletePrivateMessage err: %s", err.Error())
+		log.Errorf("DeletePrivateMessage err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -654,7 +625,7 @@ func DeletePrivateMessage(c *gin.Context) {
 	m.SendStatus = 1
 	err = m.SendUpdate(req.Ids)
 	if err != nil {
-		flog.Log.Errorf("DeletePrivateMessage err: %s", err.Error())
+		log.Errorf("DeletePrivateMessage err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}

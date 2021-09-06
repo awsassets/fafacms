@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hunterhug/fafacms/core/flog"
 	"github.com/hunterhug/fafacms/core/model"
+	log "github.com/hunterhug/golog"
 )
 
 var (
@@ -28,14 +28,14 @@ func CoolContent(c *gin.Context) {
 	}
 
 	if req.ContentId == 0 {
-		flog.Log.Errorf("CoolContent err: %s", "content_id empty")
+		log.Errorf("CoolContent err: %s", "content_id empty")
 		resp.Error = Error(ParasError, "content_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("CoolContent err: %s", err.Error())
+		log.Errorf("CoolContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -44,19 +44,19 @@ func CoolContent(c *gin.Context) {
 	content.Id = req.ContentId
 	ok, err := content.GetByRaw()
 	if err != nil {
-		flog.Log.Errorf("CoolContent err: %s", err.Error())
+		log.Errorf("CoolContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("CoolContent err: %s", "content not found")
+		log.Errorf("CoolContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if content.Status != 0 {
-		flog.Log.Errorf("CoolContent err: %s", "content status not 0 or not publish")
+		log.Errorf("CoolContent err: %s", "content status not 0 or not publish")
 		if content.Status == 2 {
 			resp.Error = Error(ContentBanPermit, "")
 		} else {
@@ -70,7 +70,7 @@ func CoolContent(c *gin.Context) {
 	cool.UserId = uu.Id
 	ok, err = cool.Exist()
 	if err != nil {
-		flog.Log.Errorf("CoolContent err: %s", err.Error())
+		log.Errorf("CoolContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -78,14 +78,14 @@ func CoolContent(c *gin.Context) {
 	if ok {
 		err = cool.Delete()
 		if err != nil {
-			flog.Log.Errorf("CoolContent err: %s", err.Error())
+			log.Errorf("CoolContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		}
 	} else {
 		err = cool.Create()
 		if err != nil {
-			flog.Log.Errorf("CoolContent err: %s", err.Error())
+			log.Errorf("CoolContent err: %s", err.Error())
 			resp.Error = Error(DBError, err.Error())
 			return
 		} else {
@@ -121,14 +121,14 @@ func BadContent(c *gin.Context) {
 	}
 
 	if req.ContentId == 0 {
-		flog.Log.Errorf("BadContent err: %s", "content_id empty")
+		log.Errorf("BadContent err: %s", "content_id empty")
 		resp.Error = Error(ParasError, "content_id empty")
 		return
 	}
 
 	uu, err := GetUserSession(c)
 	if err != nil {
-		flog.Log.Errorf("BadContent err: %s", err.Error())
+		log.Errorf("BadContent err: %s", err.Error())
 		resp.Error = Error(GetUserSessionError, err.Error())
 		return
 	}
@@ -137,19 +137,19 @@ func BadContent(c *gin.Context) {
 	content.Id = req.ContentId
 	ok, err := content.GetByRaw()
 	if err != nil {
-		flog.Log.Errorf("BadContent err: %s", err.Error())
+		log.Errorf("BadContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
 
 	if !ok {
-		flog.Log.Errorf("BadContent err: %s", "content not found")
+		log.Errorf("BadContent err: %s", "content not found")
 		resp.Error = Error(ContentNotFound, "")
 		return
 	}
 
 	if content.Status != 0 || content.Version == 0 {
-		flog.Log.Errorf("BadContent err: %s", "content status not 0 or not publish")
+		log.Errorf("BadContent err: %s", "content status not 0 or not publish")
 		if content.Status == 2 {
 			resp.Error = Error(ContentBanPermit, "")
 		} else {
@@ -163,7 +163,7 @@ func BadContent(c *gin.Context) {
 	bad.UserId = uu.Id
 	ok, err = bad.Exist()
 	if err != nil {
-		flog.Log.Errorf("BadContent err: %s", err.Error())
+		log.Errorf("BadContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 		return
 	}
@@ -175,7 +175,7 @@ func BadContent(c *gin.Context) {
 	}
 
 	if err != nil {
-		flog.Log.Errorf("BadContent err: %s", err.Error())
+		log.Errorf("BadContent err: %s", err.Error())
 		resp.Error = Error(DBError, err.Error())
 	}
 
@@ -191,7 +191,7 @@ func BadContent(c *gin.Context) {
 		if AutoBan {
 			err = cc.Ban(BadTime)
 			if err != nil {
-				flog.Log.Errorf("BadContent ban err: %s", err.Error())
+				log.Errorf("BadContent ban err: %s", err.Error())
 			}
 		}
 		resp.Data = "+"

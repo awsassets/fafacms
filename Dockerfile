@@ -1,13 +1,11 @@
-FROM golang:1.15-alpine AS go-build
+FROM golang:1.17-alpine AS go-build
 # FROM golang:1.15 AS go-build
 
 WORKDIR /go/src/github.com/hunterhug/fafacms
 
-COPY core /go/src/github.com/hunterhug/fafacms/core
-COPY vendor /go/src/github.com/hunterhug/fafacms/vendor
-COPY main.go /go/src/github.com/hunterhug/fafacms/main.go
+ADD . /go/src/github.com/hunterhug/fafacms
 
-RUN go build -ldflags "-s -w" -v -o fafacms main.go
+RUN GOOS=linux GOARCH=amd64 go build -v -ldflags "-s -w" -o fafacms main.go
 
 FROM alpine:3.10 AS prod
 # not worth use gcc image, but i love it
