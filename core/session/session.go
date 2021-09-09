@@ -32,7 +32,7 @@ func InitSession(redisConf config.MyRedisConf, singleLogin bool) error {
 		return err
 	}
 
-	Mgr = gosession.NewRedisSessionWithPool(pool)
+	Mgr, _ = gosession.NewRedisSessionWithPool(pool)
 	Mgr.ConfigTokenKeyPrefix(redisToken)
 	Mgr.ConfigUserKeyPrefix(redisUser)
 	Mgr.ConfigGetUserInfoFunc(func(id string) (*gosession.User, error) {

@@ -32,7 +32,7 @@ DbConfig:
   # 数据库用户名，*必填
   User: root
   # 数据库密码，*必填
-  Pass: 123456789
+  Pass: hunterhug
   # 数据库端口，默认值：3306
   Port: 3306
   # 数据库最大空闲连接数
@@ -75,4 +75,4 @@ SessionConfig:
   # Redis默认连接数据库(默认保持)
   RedisDB: 0
   # Redis密码(可为空,可改)
-  RedisPass: 123456789
+  RedisPass: hunterhug

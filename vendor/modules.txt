@@ -65,10 +65,10 @@ github.com/hunterhug/go_image
 github.com/hunterhug/go_image/graphics
 github.com/hunterhug/go_image/graphics/convolve
 github.com/hunterhug/go_image/graphics/interp
-# github.com/hunterhug/golog v1.0.1
+# github.com/hunterhug/golog v1.0.2
 ## explicit; go 1.17
 github.com/hunterhug/golog
-# github.com/hunterhug/gosession v1.0.11
+# github.com/hunterhug/gosession v1.0.14
 ## explicit; go 1.17
 github.com/hunterhug/gosession
 github.com/hunterhug/gosession/kv
@@ -123,7 +123,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.7.0
 ## explicit; go 1.14
 go.uber.org/multierr
-# go.uber.org/zap v1.19.0
+# go.uber.org/zap v1.19.1
 ## explicit; go 1.13
 go.uber.org/zap
 go.uber.org/zap/buffer

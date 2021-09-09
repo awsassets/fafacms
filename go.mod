@@ -10,8 +10,8 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/hunterhug/go_image v1.0.1
-	github.com/hunterhug/golog v1.0.1
-	github.com/hunterhug/gosession v1.0.11
+	github.com/hunterhug/golog v1.0.2
+	github.com/hunterhug/gosession v1.0.14
 	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 	gopkg.in/yaml.v2 v2.4.0
 	xorm.io/xorm v1.2.3
@@ -40,7 +40,7 @@ require (
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
-	go.uber.org/zap v1.19.0 // indirect
+	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
